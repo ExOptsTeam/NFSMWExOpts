@@ -73,7 +73,7 @@ void __declspec(naked) CameraNamesCodeCave()
 			jmp CameraNamesCodeCaveExit
 
 		drift :
-			mov eax, 0x0066568A
+			mov eax, 0xA1211428
 			jmp CameraNamesCodeCaveExit
 
 		pursuit :
@@ -919,7 +919,7 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x7BAEC3, 0x0A, true);
 		injector::WriteMemory<unsigned char>(0x7BAF10, 0x0A, true);
 		injector::WriteMemory<unsigned char>(0x7bca3c, 0x0A, true);
-		injector::WriteMemory<unsigned char>(0x7c0ae6, 0x0A, true);
+		injector::WriteMemory<unsigned char>(0x7c0ae7, 0x0A, true);
 	}
 
 	// Fix (ignore) starting heat level when a challenge executed from quick race screen
@@ -1091,14 +1091,6 @@ DWORD WINAPI Thing(LPVOID)
 			injector::WriteMemory<DWORD>(*(DWORD*)(raceOptions + 0x10) + 0xA8, selectedCar, true); // Career
 
 			injector::WriteMemory<unsigned char>(0x6f48e7, 0xEB, true); // Use selected cars at Challenge Series
-		}
-		
-		if (Strings && EnableCameras && !once1) // Change "Quit to Xbox Live Main Menu" string to "Drift"
-		{
-			DWORD QuitToXboxStringAddr = (Strings + 0xAC);
-			char* DriftString = "Drift";
-			injector::WriteMemory<DWORD>(QuitToXboxStringAddr, (DWORD)DriftString, true);
-			once1 = 1;
 		}
 
 		if (Strings && nlgzrgnTakeOver && !once2) // Indicate if ExOpts is Loaded at splash screen (If nlgzrgnTakeOver enabled)
