@@ -55,7 +55,7 @@ class game_version_manager
             #ifdef INJECTOR_GVM_PLUGIN_NAME
                 PluginName = INJECTOR_GVM_PLUGIN_NAME;
             #else
-                PluginName = "LODLights.asi";
+                PluginName = "Unknown Plugin Name";
             #endif
             
             this->Clear();
@@ -65,7 +65,7 @@ class game_version_manager
         // Clear any information about game version
         void Clear()
         {
-            game = region = major = minor = cracker = steam = 0;
+            game = region = major = minor = majorRevision = minorRevision = cracker = steam = 0;
         }
         
         // Checks if I don't know the game we are attached to
@@ -110,10 +110,7 @@ class game_version_manager
             const char* g = this->IsIII() ? "III" : this->IsVC() ? "VC" : this->IsSA() ? "SA" : this->IsIV() ? "IV" : this->IsEFLC() ? "EFLC" : "UNK";
             const char* r = this->IsUS()? "US" : this->IsEU()? "EURO" : "UNK_REGION";
             const char* s = this->IsSteam()? "Steam" : "";
-            if (this->IsIII() || this->IsVC() || this->IsSA())
-                sprintf(buffer, "GTA %s %d.%d %s%s", g, major, minor, r, s);
-            else 
-                sprintf(buffer, "GTA %s %d.%d.%d.%d %s%s", g, major, minor, majorRevision, minorRevision, r, s);
+            sprintf(buffer, "GTA %s %d.%d.%d.%d %s%s", g, major, minor, majorRevision, minorRevision, r, s);
             return buffer;
         }
 
