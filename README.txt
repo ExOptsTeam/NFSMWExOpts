@@ -1,4 +1,4 @@
-NFS Most Wanted - Extra Options - Source Code for Build 5; Rev.01
+NFS Most Wanted - Extra Options - Source Code for Build 5; Rev.02
 Made by nlgzrgn
 ------------------------------------------------------------------------------------------------------------
 Features:
@@ -179,6 +179,9 @@ https://www.youtube.com/c/nlgzrgn77
 ------------------------------------------------------------------------------------------------------------
 
 Changelog: (+ Addition, * Change, ! Attention, - Deletion)
+
+Build 5; Rev.02:
+* Fixed a possible problem with Car Size hack.
 
 Build 5; Rev.01:
 + Added Traffic Density Controllers.

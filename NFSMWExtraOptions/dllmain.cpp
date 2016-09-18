@@ -1066,11 +1066,6 @@ void Init()
 	injector::WriteMemory<float>(0x737870, CarScale, true); // Length
 	injector::WriteMemory<float>(0x7378A2, CarScale, true); // Width
 	injector::WriteMemory<float>(0x7378D4, CarScale, true); // Height
-	injector::WriteMemory<float>(0x737906, CarScale, true); // Don't know the others
-	injector::WriteMemory<float>(0x73792E, CarScale, true); 
-	injector::WriteMemory<float>(0x73794C, CarScale, true);
-	injector::WriteMemory<float>(0x737956, CarScale, true);
-	injector::WriteMemory<float>(0x737960, CarScale, true);
 
 	// Other Things
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&Thing, NULL, 0, NULL);
