@@ -737,9 +737,6 @@ inline bool game_version_manager::Detect()
             game = 'E', major = 1, minor = 1, majorRevision = 2, minorRevision = 0, region = 'U', steam = false;
             return true;
 
-        case 0x1415FF790:  // GTA 5 v1.0.350.2 Non-Steam US
-            game = '5', major = 1, minor = 0, majorRevision = 350, minorRevision = 2, region = 'U', steam = false;
-            return true;
         default:
             return false;
     }
