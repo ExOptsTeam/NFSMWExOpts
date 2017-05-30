@@ -9,7 +9,7 @@
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, LowBeamAmount, HighBeamAmount, MaxHeatLevel, MinHeatLevel, copLightsAmount, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadLights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headLightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars;
-bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, EnableCustomizationForAll, AlwaysRain, WindowedMode, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, onQuickRaceMenu, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage;
+bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, EnableCustomizationForAll, AlwaysRain, WindowedMode, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, onQuickRaceMenu, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState;
 
 DWORD WINAPI Thing(LPVOID);
@@ -743,6 +743,7 @@ void Init()
 	ShowDebugCarCustomize = iniReader.ReadInteger("Menu", "ShowDebugCarCustomize", 0) == 1;
 	ShowHiddenTracks = iniReader.ReadInteger("Menu", "ShowHiddenTracks", 1);
 	maxBlacklist = iniReader.ReadInteger("Menu", "MaximumBlacklistRival", 15);
+	ReplayBlacklistRaces = iniReader.ReadInteger("Menu", "ReplayBlacklistRaces", 0) == 1;
 	csBlacklist = iniReader.ReadInteger("Menu", "ChallengeSeriesBlacklist", 19);
 	randomizeCount = iniReader.ReadInteger("Menu", "RandomizeCount", 30);
 	SplashScreenTimeLimit = iniReader.ReadFloat("Menu", "SplashScreenTimeLimit", 30.0f);
@@ -891,6 +892,14 @@ void Init()
 	{
 		injector::MakeNOP(0x55a556, 6, true);
 		injector::MakeNOP(0x551433, 6, true);
+	}
+
+	// Replay Blacklist Races
+	if (ReplayBlacklistRaces)
+	{
+		injector::MakeNOP(0x5FD1B9, 2, true); //allow challenging defeated rival
+		injector::WriteMemory<unsigned char>(0x52F202, 0x00, true); // remove defeated flag
+		injector::MakeNOP(0x6243C8, 6, true); // visuals fix
 	}
 
 	// Challenge Series Bin
