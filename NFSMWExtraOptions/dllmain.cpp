@@ -9,7 +9,7 @@
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, LowBeamAmount, HighBeamAmount, MaxHeatLevel, MinHeatLevel, copLightsAmount, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadLights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headLightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars;
-bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, EnableCustomizationForAll, AlwaysRain, WindowedMode, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, onQuickRaceMenu, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces;
+bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, EnableCustomizationForAll, AlwaysRain, WindowedMode, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, onQuickRaceMenu, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState;
 
 DWORD WINAPI Thing(LPVOID);
@@ -781,6 +781,7 @@ void Init()
 	MaxHeatLevel = iniReader.ReadFloat("Pursuit", "MaximumHeatLevel", 10.00f);
 	HelicopterFix = iniReader.ReadInteger("Pursuit", "HelicopterBountyFix", 1) == 1;
 	X10Fix = iniReader.ReadInteger("Pursuit", "ZeroBountyFix", 1) == 1;
+	PursuitActionMode = iniReader.ReadInteger("Pursuit", "PursuitActionMode", 0) == 1;
 
 	// VisualTreatment
 	EnableVTOverride = iniReader.ReadInteger("VisualTreatment", "EnableVisualTreatmentOverride", 0) == 1;
@@ -1336,6 +1337,30 @@ void Init()
 		injector::MakeJMP(0x5451D7, 0x544F5D, true); // Jump to unused?? duplicate menu option
 		injector::WriteMemory<DWORD>(0x544F92, 0x89CADC, true); // Menu Code To Execute
 		injector::WriteMemory<DWORD>(0x53CED7, 0x89FAD4, true); // "UI_DebugCarCustomize.fng"
+	}
+
+	// Pursuit Action Game Mode - Harder Pursuits in Quick Races
+	if (PursuitActionMode)
+	{
+		// Replace Race Table (0x2283ECAF) with Heat Table (0xD4B0CC11)
+		injector::WriteMemory<DWORD>(0x403476, 0xD4B0CC11, true);
+		injector::WriteMemory<DWORD>(0x409176, 0xD4B0CC11, true);
+
+		// Replace Race Support (0xE5332008) with Heat Support (0xF3918F68)
+		injector::WriteMemory<DWORD>(0x403496, 0xF3918F68, true);
+		injector::WriteMemory<DWORD>(0x4091D9, 0xF3918F68, true);
+
+		// Can Spawn Roadblocks in Quick Race
+		injector::MakeNOP(0x419519, 6, true);
+
+		// Cops Can Call Support in Quick Race :
+		injector::WriteMemory<unsigned char>(0x4196FF, 0xEB, true);
+
+		// Other fixes ??
+		injector::MakeNOP(0x41974B, 2, true);
+
+		// Helicopter
+		injector::MakeNOP(0x42BAD6, 6, true);
 	}
 
 	// Other Things
