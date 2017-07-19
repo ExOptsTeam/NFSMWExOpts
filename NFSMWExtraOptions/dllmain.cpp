@@ -987,7 +987,7 @@ void Init()
 		// Add the hidden, not working Track Direction option to menu
 		injector::MakeNOP(0x7acb21, 2, true); // Sprint
 		injector::MakeNOP(0x7acea1, 2, true); // Lap Knockout
-		//injector::MakeNOP(0x7ad141, 2, true); // Tollbooth
+		injector::MakeNOP(0x7ad141, 2, true); // Tollbooth
 		injector::MakeNOP(0x7ad359, 2, true); // Speedtrap
 		injector::MakeNOP(0x7ac901, 2, true); // Circuit & Challenge
 
