@@ -43,8 +43,6 @@ int(__cdecl *UnPause)(const void* unk) = (int(__cdecl*)(const void*))0x632190;
 unsigned int(__cdecl *stringhash32)(const char* k) = (unsigned int (__cdecl*)(const char*))0x005CC240;
 unsigned int(__thiscall *CustomizeCategoryScreen_AddCustomOption)(void* TheThis, const char* unk1, unsigned int unk2, unsigned int unk3, unsigned int unk4) = (unsigned int(__thiscall*)(void*, const char*, unsigned int, unsigned int, unsigned int))0x007BB560;
 
-const char* HelicopterName = "Police Helicopter";
-
 #define DialogBoxReturn 0x1337DBFF
 #define DialogBoxButtonOK 0x417B2601
 #define COPYRIGHTOBJHASH 0x5B9D88B9
@@ -547,7 +545,7 @@ void __declspec(naked) HeliBountyFixCodeCave()
 			add esp, 4
 			cmp esi, eax
 			jne originalcode
-			push HelicopterName
+			push 0x4EE07213 // Federal Pursuit Vehicle text
 			jmp AnnounceBountyReward
 
 		originalcode :
@@ -758,24 +756,25 @@ void Init()
 	ShowMessage = iniReader.ReadInteger("Misc", "ShowMessage", 1) == 1;
 
 	// Limit values to fix increment & decrement behaviour breaking
-	if (!(minLaps % 128)) minLaps = 1;
-	if (!(maxLaps % 128)) maxLaps = 8;
-	if (!(maxLapsRandomQR % 128)) maxLapsRandomQR = 5;
 
-	if (!(minOpponents % 16)) minOpponents = 1;
-	if (!(maxOpponents % 16)) maxOpponents = 3;
-	if (!(maxOpponentsRandomQR % 16)) maxOpponentsRandomQR = 3;
+	// loop around values
+	minLaps %= 128; 
+	maxLaps %= 128;
+	maxLapsRandomQR %= 128;
+
+	minOpponents %= 16;
+	maxOpponents %= 16;
+	maxOpponentsRandomQR %= 16;
 
 	//if (MaxHeatLevel < 1 || MaxHeatLevel < MinHeatLevel || MaxHeatLevel > 10) MaxHeatLevel = 5;
 	//if (MinHeatLevel < 1 || MaxHeatLevel < MinHeatLevel || MinHeatLevel > 10) MinHeatLevel = 1;
-	if (headLightsMode > 2) headLightsMode = 2;
+	headLightsMode %= 3;
 
-	if (!(randomizeCount % 501)) randomizeCount = 30;
+	randomizeCount %= 501;
 
-	if (!(lowTraffic % 101)) lowTraffic = 10;
-	if (!(medTraffic % 101)) medTraffic = 30;
-	if (!(highTraffic % 101)) highTraffic = 50;
-
+	lowTraffic %= 101;
+	medTraffic %= 101;
+	highTraffic %= 101;
 
 	// Remove 1-8 Lap Restriction
 	injector::WriteMemory<unsigned char>(0x7AC3EC, minLaps, true); // Decrease lap count min lap controller
