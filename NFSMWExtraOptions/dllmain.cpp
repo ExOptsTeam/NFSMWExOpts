@@ -43,8 +43,6 @@ int(__cdecl *UnPause)(const void* unk) = (int(__cdecl*)(const void*))0x632190;
 unsigned int(__cdecl *stringhash32)(const char* k) = (unsigned int (__cdecl*)(const char*))0x005CC240;
 unsigned int(__thiscall *CustomizeCategoryScreen_AddCustomOption)(void* TheThis, const char* unk1, unsigned int unk2, unsigned int unk3, unsigned int unk4) = (unsigned int(__thiscall*)(void*, const char*, unsigned int, unsigned int, unsigned int))0x007BB560;
 
-const char* HelicopterName = "Police Helicopter";
-
 #define DialogBoxReturn 0x1337DBFF
 #define DialogBoxButtonOK 0x417B2601
 #define COPYRIGHTOBJHASH 0x5B9D88B9
@@ -547,7 +545,7 @@ void __declspec(naked) HeliBountyFixCodeCave()
 			add esp, 4
 			cmp esi, eax
 			jne originalcode
-			push HelicopterName
+			push 0x4EE07213 // Federal Pursuit Vehicle text	
 			jmp AnnounceBountyReward
 
 		originalcode :
