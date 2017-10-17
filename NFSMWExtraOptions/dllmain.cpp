@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "stdio.h"
+#include "DialogInterfaceHook.h"
 #include <windows.h>
 #include "..\includes\injector\injector.hpp"
 #include <cstdint>
@@ -20,7 +21,6 @@ DWORD ButtonResult = 0;
 DWORD CameraNamesCodeCaveExit = 0x51C98C;
 DWORD HeatLevelsCodeCaveExit = 0x443dc9;
 DWORD VinylMenuCodeCaveExit = 0x7BC908;
-DWORD VinylMenuCodeCaveCall = 0x7BB560;
 DWORD VinylMenuCodeCave2Exit = 0x7BD30F;
 DWORD VinylMenuCodeCave2ifAbove = 0x7BD210;
 DWORD RaceHackTypeCodeCaveExit = 0x5FAA2F;
@@ -29,24 +29,24 @@ DWORD IconFixCodeCaveExit = 0x56E099;
 DWORD LANRaceSelectFixCodeCaveExit = 0x7aa8ed;
 DWORD LANRaceModeFixCodeCaveExit = 0x5395a3;
 DWORD LANRaceModeFixCodeCave2Exit = 0x535ecb;
-DWORD StringReplacementCodeCaveExit = 0x56bbd5;
 DWORD HeliBountyFixCodeCaveExit = 0x595BF2;
 DWORD HeliBountyFixCodeCave2Exit = 0x418F8C;
 DWORD X10FixCodeCaveExit = 0x418F61;
 DWORD X10FixCodeCave2Exit = 0x41901F;
 DWORD AnnounceBountyReward = 0x595C37;
-DWORD FindCarIDFromPresetName = 0x5CC240;
 DWORD VTCodeCaveExit = 0x73E361;
-DWORD CameraChangeFunction = 0x0047CC50;
-DWORD DialogBoxFunction = 0x00598970;
 DWORD DialogBoxReturnValueExit = 0x007C7250;
-DWORD UnPauseFunction = 0x632190;
 
-char* StringBuffer1 = "© 2005 Electronic Arts Inc. All Rights Reserved.^NFSMW Extra Options - © 2017 ExOpts Team. No Rights Reserved.";
-DWORD _A7EBC389_New = (DWORD)StringBuffer1;
+// Properly implemented functions for calling
+void(__stdcall *CameraAI_Director_Reset)() = (void(__stdcall*)())0x0047CC50;
+int(__cdecl *UnPause)(const void* unk) = (int(__cdecl*)(const void*))0x632190;
+unsigned int(__cdecl *stringhash32)(const char* k) = (unsigned int (__cdecl*)(const char*))0x005CC240;
+unsigned int(__thiscall *CustomizeCategoryScreen_AddCustomOption)(void* TheThis, const char* unk1, unsigned int unk2, unsigned int unk3, unsigned int unk4) = (unsigned int(__thiscall*)(void*, const char*, unsigned int, unsigned int, unsigned int))0x007BB560;
 
 #define DialogBoxReturn 0x1337DBFF
 #define DialogBoxButtonOK 0x417B2601
+#define COPYRIGHTOBJHASH 0x5B9D88B9
+#define TAKEOVERSTRING "© 2005 Electronic Arts Inc. All Rights Reserved.^NFSMW Extra Options - © 2017 ExOpts Team. No Rights Reserved."
 
 void __declspec(naked) CameraNamesCodeCave()
 {
@@ -100,21 +100,20 @@ void __declspec(naked) CameraNamesCodeCave()
 
 void __declspec(naked) HeatLevelsCodeCave()
 {
-	_asm
+	if (EnableHeatLevelOverride)
 	{
-		cmp EnableHeatLevelOverride, 1
-		jne dontforceMinMaxHeat
-
-		forceMinMaxHeat :
+		_asm
+		{
 			mov ebx, MaxHeatLevel
 			mov[esi + 0xE0], ebx
 			mov ebx, MinHeatLevel
 			mov[esi + 0xDC], ebx
-
-		dontforceMinMaxHeat :
-			mov edx, [esi + 0xE0]
-			jmp HeatLevelsCodeCaveExit
-
+		}
+	}
+	_asm
+	{
+		mov edx, [esi + 0xE0]
+		jmp HeatLevelsCodeCaveExit
 	}
 }
 
@@ -128,9 +127,9 @@ void __declspec(naked) VinylMenuCodeCave()
 			push 0x55778E5A
 			push edx
 			mov ecx, esi
-			call VinylMenuCodeCaveCall
+			call CustomizeCategoryScreen_AddCustomOption
 			lea eax, [esp + 0x14]
-			mov ebp, 0x00000001
+			mov ebp, 1
 			jmp VinylMenuCodeCaveExit
 	}
 }
@@ -278,14 +277,14 @@ void __declspec(naked) RaceHackReplaceCodeCave()
 {
 	_asm
 	{
-			cmp UnlockAllThings, 0x01
-			jne originalcode
-
-			cmp ShowHiddenTracks, 0x00
+			cmp UnlockAllThings, 0
 			je originalcode
 
-			cmp onQuickRaceMenu, 0x01
-			jne originalcode
+			cmp ShowHiddenTracks, 0
+			je originalcode
+
+			cmp onQuickRaceMenu, 0
+			je originalcode
 
 			cmp eax, 0xC277386E
 			je id20_1_1
@@ -528,35 +527,13 @@ void __declspec(naked) LANRaceModeFixCodeCave2()
 	}
 }
 
-void __declspec(naked) StringReplacementCodeCave()
+void __cdecl GetGameVersionNumberStringHook(char* buffer, int bufsize)
 {
-	_asm
-	{
-			mov ecx, dword ptr ds : [ebx + eax * 0x08]
-
-			cmp ExOptsTeamTakeOver, 0x00
-			je continuee
-			cmp ecx, 0xA7EBC389
-			je ReplaceCopyrightString
-			// cmp ecx, AnotherStringHashHere
-			// je ReplaceAnotherString
-			jmp continuee
-
-		ReplaceCopyrightString :
-			cmp once1, 0x01
-			je continuee
-
-			mov ecx, _A7EBC389_New
-			mov dword ptr[ebx + eax * 0x08 + 0x04], ecx
-
-			mov once1, 0x01
-			mov ecx, 0xA7EBC389
-
-		continuee :
-			cmp ecx, edx
-			jmp StringReplacementCodeCaveExit
-
-	}
+	const char* PackageName;
+	_asm mov eax, [esi+0x10]
+	_asm mov PackageName, eax
+	sprintf(buffer, "%d.%d", 1, 3);
+	FEPrintf(PackageName, COPYRIGHTOBJHASH, TAKEOVERSTRING);
 }
 
 void __declspec(naked) HeliBountyFixCodeCave()
@@ -564,8 +541,8 @@ void __declspec(naked) HeliBountyFixCodeCave()
 	_asm
 	{
 			push 0x8915DC //copheli
-			call FindCarIDFromPresetName
-			add esp, 0x04
+			call stringhash32
+			add esp, 4
 			cmp esi, eax
 			jne originalcode
 			push 0x4EE07213 // Federal Pursuit Vehicle text
@@ -656,37 +633,6 @@ void __declspec(naked) VTCodeCave()
 		mov ecx, VTecx
 		jmp VTCodeCaveExit
 	}
-}
-
-void __declspec(naked) CameraChange()
-{
-	_asm
-	{
-		call CameraChangeFunction
-		retn
-	}
-}
-
-int ShowDialogBox(const char* message, int DialogType, unsigned int ButtonNameHash, unsigned int ButtonHash) // Xan is da real mvp
-{
-	_asm
-	{
-		push[message]
-		push ButtonHash
-		push ButtonHash
-		push ButtonNameHash
-		push DialogType
-		push 0x00890978
-		push 0x00890978
-		call DialogBoxFunction
-	}
-	return 1;
-}
-
-int UnPause()
-{
-	_asm call UnPauseFunction;
-	return 1;
 }
 
 void __declspec(naked) DialogBoxReturnValue(void* Pointer)
@@ -810,26 +756,25 @@ void Init()
 	ShowMessage = iniReader.ReadInteger("Misc", "ShowMessage", 1) == 1;
 
 	// Limit values to fix increment & decrement behaviour breaking
-	if (minLaps < 0 || minLaps > 127) minLaps = 1;
-	if (maxLaps < 0 || maxLaps > 127) maxLaps = 8;
-	if (maxLapsRandomQR < 0 || maxLapsRandomQR > 127) maxLapsRandomQR = 5;
 
-	if (minOpponents < 0 || minOpponents > 15) minOpponents = 1;
-	if (maxOpponents < 0 || maxOpponents > 15) maxOpponents = 3;
-	if (maxOpponentsRandomQR < 0 || maxOpponentsRandomQR > 15) maxOpponentsRandomQR = 3;
+	// loop around values
+	minLaps %= 128; 
+	maxLaps %= 128;
+	maxLapsRandomQR %= 128;
+
+	minOpponents %= 16;
+	maxOpponents %= 16;
+	maxOpponentsRandomQR %= 16;
 
 	//if (MaxHeatLevel < 1 || MaxHeatLevel < MinHeatLevel || MaxHeatLevel > 10) MaxHeatLevel = 5;
 	//if (MinHeatLevel < 1 || MaxHeatLevel < MinHeatLevel || MinHeatLevel > 10) MinHeatLevel = 1;
-	if (headLightsMode > 2) headLightsMode = 2;
+	headLightsMode %= 3;
 
-	if (ShowHiddenTracks > 2) ShowHiddenTracks = 1;
+	randomizeCount %= 501;
 
-	if (randomizeCount < 1 || randomizeCount>500) randomizeCount = 30;
-
-	if (lowTraffic < 0 || lowTraffic > 100) lowTraffic = 10;
-	if (medTraffic < 0 || medTraffic > 100) medTraffic = 30;
-	if (highTraffic < 0 || highTraffic > 100) highTraffic = 50;
-
+	lowTraffic %= 101;
+	medTraffic %= 101;
+	highTraffic %= 101;
 
 	// Remove 1-8 Lap Restriction
 	injector::WriteMemory<unsigned char>(0x7AC3EC, minLaps, true); // Decrease lap count min lap controller
@@ -914,7 +859,7 @@ void Init()
 	}
 
 	// Race Speed Multiplier
-	injector::WriteMemory<float>(0x901B1C, gameSpeed, true);
+	*(float*)0x901B1C = gameSpeed;
 
 	// Randomize Count
 	injector::WriteMemory<int>(0x7b4648, randomizeCount, true);
@@ -934,7 +879,7 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x8B2844, 0x4A, true);
 
 		// Always show whole map
-		injector::MemoryFill(0x89B15D, 0x00, 10, true);
+		injector::WriteMemory<unsigned char>(0x89B15D, 0, true);
 		injector::WriteMemory<unsigned char>(0x57bf01, 0xEB, true);
 		injector::WriteMemory<unsigned char>(0x57bf19, 0xEB, true);
 		injector::WriteMemory<unsigned char>(0x57bf5f, 0xEB, true);
@@ -960,26 +905,22 @@ void Init()
 	injector::MakeNOP(0x7AAB69, 6, true);
 
 	// Fix Crash
-	injector::MakeNOP(0x7AA8E7, LANRaceSelectFixCodeCaveExit - 0x7AA8E7, true);
+	injector::MakeRangedNOP(0x7AA8E7, LANRaceSelectFixCodeCaveExit, true);
 	injector::MakeJMP(0x7AA8E7, LANRaceSelectFixCodeCave, true);
 
 	// Fix Icons and Strings - 1
-	injector::MakeNOP(0x539562, LANRaceModeFixCodeCaveExit - 0x539562, true);
+	injector::MakeRangedNOP(0x539562, LANRaceModeFixCodeCaveExit, true);
 	injector::MakeJMP(0x539562, LANRaceModeFixCodeCave, true);
 
 	// Fix Icons and Strings - 2
-	injector::MakeNOP(0x535E8A, LANRaceModeFixCodeCave2Exit - 0x535E8A, true);
+	injector::MakeRangedNOP(0x535E8A, LANRaceModeFixCodeCave2Exit, true);
 	injector::MakeJMP(0x535E8A, LANRaceModeFixCodeCave2, true);
 
 	if (!ShowTollbooth) // Remove Tollbooth if the option is 0
-	{
 		injector::MakeJMP(0x7AAA11, 0x7AAA5D, true);
-	}
 
 	if (!ShowChallenge) // Remove Challenge if the option is 0
-	{
 		injector::MakeJMP(0x7AAAEF, 0x7AAB3B, true);
-	}
 
 	// Add Cops option to track options
 	if (ShowMoreRaceOptions)
@@ -1008,9 +949,8 @@ void Init()
 
 	// Remove online option from main menu
 	if (HideOnline)
-	{
 		injector::WriteMemory<unsigned char>(0x5450f9, 0x46, true);
-	}
+
 	if (ShowOnlineOpts) injector::MakeNOP(0x5290B2, 2, true); // Show Online Options menu
 
 	// Load headlights preferences
@@ -1067,41 +1007,33 @@ void Init()
 	// Rain Options
 	if (AlwaysRain)
 	{
-		injector::WriteMemory<unsigned char>(0x9B0A30, 0x01, true);
+		//injector::WriteMemory<unsigned char>(0x9B0A30, 0x01, true);
+		*(unsigned int*)0x9B0A30 = 1;
 		injector::WriteMemory<unsigned char>(0x758293, 0xEB, true); // Road Reflection Fix??
 	}
-	injector::WriteMemory<float>(0x904B38, RoadReflection, true);
-	injector::WriteMemory<float>(0x904A90, FallingRainSize, true);
-	injector::WriteMemory<float>(0x904A14, RainAmount, true);
-	injector::WriteMemory<float>(0x904A94, RainIntensity, true);
-	injector::WriteMemory<float>(0x904A24, RainXing, true);
-	injector::WriteMemory<float>(0x904A28, RainFallSpeed, true);
-	injector::WriteMemory<float>(0x904A2C, RainGravity, true);
+	*(float*)0x904B38 = RoadReflection;
+	*(float*)0x904A90 = FallingRainSize;
+	*(float*)0x904A14 = RainAmount;
+	*(float*)0x904A94 = RainIntensity;
+	*(float*)0x904A24 = RainXing;
+	*(float*)0x904A28 = RainFallSpeed;
+	*(float*)0x904A2C = RainGravity;
 
 	// Options from ModLoader
 	if (WindowedMode)
-	{
-		injector::WriteMemory<unsigned char>(0x982BF0, WindowedMode, true);
-	}
+		*(unsigned int*)0x00982BF0 = 1;
 
 	if (SkipMovies)
-	{
-		injector::WriteMemory<unsigned char>(0x926144, SkipMovies, true);
-	}
+		*(unsigned int*)0x926144 = 1;
 
 	if (!EnableSound)
-	{
-		injector::WriteMemory<unsigned char>(0x8F86F8, EnableSound, true);
-	}
+		*(unsigned int*)0x8F86F8 = 0;
 
 	if (!EnableMusic)
-	{
-		injector::WriteMemory<unsigned char>(0x8F86FC, EnableMusic, true);
-	}
+		*(unsigned int*)0x8F86FC = 0;
+
 	if (ShowMessage)
-	{
 		injector::MakeCALL(0x0058F710, DialogBoxReturnValue, true);
-	}
 
 	// Enable hidden camera modes
 	if (EnableCameras)
@@ -1109,7 +1041,7 @@ void Init()
 		injector::MakeNOP(0x5A38AA, 2, true); // For C key
 		injector::MakeNOP(0x51C8D9, 2, true); // Player Options Menu - Increment
 		injector::MakeNOP(0x51C8AF, 2, true); // Player Options Menu - Decrement
-		injector::MakeNOP(0x51C95F, 0x0051C98C - 0x51C95F, true); // Clean the unused code
+		injector::MakeRangedNOP(0x51C95F, 0x0051C98C, true); // Clean the unused code
 		injector::MakeJMP(0x51C95F, CameraNamesCodeCave, true); // Fix Names
 
 		// Rearview Mirror Fix Addition for Widescreen Fix
@@ -1121,7 +1053,7 @@ void Init()
 	}
 
 	// Splash Screen Time Limit
-	injector::WriteMemory<float>(0x8F3CD0, SplashScreenTimeLimit, true);
+	*(float*)0x8F3CD0 = SplashScreenTimeLimit;
 
 	// Force Show Subtitles
 	if (ShowSubs)
@@ -1132,40 +1064,30 @@ void Init()
 	}
 
 	// Heat Level Overrides
-	injector::MakeNOP(0x443dc3, HeatLevelsCodeCaveExit - 0x443dc3, true); // Clean the unused code
+	injector::MakeRangedNOP(0x443dc3, HeatLevelsCodeCaveExit, true); // Clean the unused code
 	injector::MakeJMP(0x443dc3, HeatLevelsCodeCave, true); // Prepare the game for advanced force heat level hack
 
 	// Show COMPLETED %x instead of LAP 1/1
 	if (CarbonStyleRaceProgress)
 	{
-		injector::MakeNOP(0x57AA2F, 0x57AA46 - 0x57AA2F, true);
+		injector::MakeRangedNOP(0x57AA2F, 0x57AA46, true);
 		// call 0x5FAA20 (Just moved this call up)
-		injector::WriteMemory<unsigned char>(0x57AA2F, 0xE8, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 1, 0xEC, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 2, 0xFF, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 3, 0x07, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 4, 0x00, true);
+		injector::MakeCALL(0x57AA2F, 0x5FAA20, true);
 		// cmp dword ptr ds: [esi+0x3C],0x01 (if lap count = 1)
-		injector::WriteMemory<unsigned char>(0x57AA2F + 5, 0x83, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 6, 0x7E, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 7, 0x3C, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 8, 0x01, true);
+		injector::WriteMemory<unsigned int>(0x57AA34, 0x13C7E83, true);
 		//je 0x57AA73 (If true, use COMPLETED %)
-		injector::WriteMemory<unsigned char>(0x57AA2F + 9, 0x74, true);
-		injector::WriteMemory<unsigned char>(0x57AA2F + 10, 0x39, true);
+		injector::WriteMemory<unsigned short int>(0x57AA38, 0x3974, true);
 	}
 
 	// Burger King
 	if (eatSomeBurgers)
-	{
 		injector::WriteMemory<unsigned char>(0x576A8D, 0xEB, true);
-	}
 
 	// Special Vinyl Category
 	if (moreVinyls)
 	{
-		injector::MakeNOP(0x7BC8FF, VinylMenuCodeCaveExit - 0x7BC8FF, true);
-		injector::MakeNOP(0x7BD26F, VinylMenuCodeCave2Exit - 0x7BD26F, true);
+		injector::MakeRangedNOP(0x7BC8FF, VinylMenuCodeCaveExit, true);
+		injector::MakeRangedNOP(0x7BD26F, VinylMenuCodeCave2Exit, true);
 
 		injector::MakeJMP(0x7BC8FF, VinylMenuCodeCave, true);
 		injector::MakeJMP(0x7BD26F, VinylMenuCodeCave2, true);
@@ -1196,15 +1118,15 @@ void Init()
 	// Unlock all things (Load preference)
 	if (UnlockAllThings)
 	{
-		injector::WriteMemory<unsigned char>(0x926124, 0x01, true);
+		*(unsigned char*)0x926124 = 1;
 
 		injector::WriteMemory<unsigned char>(0x7ba6e0, 18, true);
 		injector::WriteMemory<unsigned char>(0x7ba6e4, 17, true);
 	}
 
 	// Unlock all tracks (Code caves)
-	injector::MakeNOP(0x5FAA2A, RaceHackTypeCodeCaveExit - 0x5FAA2A, true);
-	injector::MakeNOP(0x60107F, RaceHackReplaceCodeCaveExit - 0x60107F, true);
+	injector::MakeRangedNOP(0x5FAA2A, RaceHackTypeCodeCaveExit, true);
+	injector::MakeRangedNOP(0x60107F, RaceHackReplaceCodeCaveExit, true);
 	injector::MakeJMP(0x5FAA2A, RaceHackTypeCodeCave, true);
 	injector::MakeJMP(0x60107F, RaceHackReplaceCodeCave, true);
 
@@ -1243,17 +1165,18 @@ void Init()
 	}
 
 	// World Animation Speed
-	injector::WriteMemory<float>(0x904AEC, WorldAnimationSpeed, true);
+	*(float*)0x904AEC = WorldAnimationSpeed;
 
 	if (ExperimentalSplitScreenFix)
 	{
 		injector::WriteMemory<unsigned char>(0x7a3f68, 0x0D, true); // Fix Player 2 Ready control
 		injector::WriteMemory<unsigned char>(0x666eb3, 0xEB, true); // Fix loading screen crash
-		injector::MakeNOP(0x6cfc03, 2, true); // Fix black screen??*/
+		injector::MakeNOP(0x6cfc03, 2, true); // Fix black screen??
 	}
 	
 	// String Replacement
-	injector::MakeJMP(0x56bbd0, StringReplacementCodeCave, true);
+	if (ExOptsTeamTakeOver)
+		injector::MakeCALL(0x005A3260, GetGameVersionNumberStringHook, true);
 
 	// Starting Cash
 	injector::WriteMemory<unsigned char>(0x56D7D3, 0x81, true); // add
@@ -1273,11 +1196,11 @@ void Init()
 	if (HelicopterFix)
 	{
 		// Fix Bounty Announcement
-		injector::MakeNOP(0x595BED, HeliBountyFixCodeCaveExit - 0x595BED, true);
+		injector::MakeRangedNOP(0x595BED, HeliBountyFixCodeCaveExit, true);
 		injector::MakeJMP(0x595BED, HeliBountyFixCodeCave, true);
 
 		// Fix Bounty Amount
-		injector::MakeNOP(0x418F86, HeliBountyFixCodeCave2Exit - 0x418F86, true);
+		injector::MakeRangedNOP(0x418F86, HeliBountyFixCodeCave2Exit, true);
 		injector::MakeJMP(0x418F86, HeliBountyFixCodeCave2, true);
 	}
 	
@@ -1286,11 +1209,11 @@ void Init()
 	if (X10Fix)
 	{ 
 		// Fix 0 Bounty
-		injector::MakeNOP(0x418F5B, X10FixCodeCaveExit - 0x418F5B, true);
+		injector::MakeRangedNOP(0x418F5B, X10FixCodeCaveExit, true);
 		injector::MakeJMP(0x418F5B, X10FixCodeCave, true);
 
 		// Fix combo timer
-		injector::MakeNOP(0x419019, X10FixCodeCave2Exit - 0x419019, true);
+		injector::MakeRangedNOP(0x419019, X10FixCodeCave2Exit, true);
 		injector::MakeJMP(0x419019, X10FixCodeCave2, true);
 	}
 	
@@ -1301,9 +1224,7 @@ void Init()
 
 	// Max Performance on Shop
 	if (EnableMaxPerfOnShop)
-	{
 		injector::MakeNOP(0x7BBC5B, 6, true);
-	}
 
 	// Heat Level Override - Initialize
 	if (EnableHeatLevelOverride)
@@ -1324,9 +1245,7 @@ void Init()
 
 	// Remove Busted Screen Frame
 	if (CarbonStyleBustedScreen)
-	{
 		injector::WriteMemory<unsigned char>(0x8948F8, 0x00, true);
-	}
 
 	// Show Debug Car Customize
 	if (ShowDebugCarCustomize)
@@ -1371,8 +1290,6 @@ DWORD WINAPI Thing(LPVOID)
 {
 	while (true)
 	{
-		Sleep(1);
-
 		raceOptions = *(DWORD*)0x91CF90; // Race Options Pointer (Thanks to samfednik)
 		HeatLevelAddr = (*(DWORD*)0x934CF4) + 0x14; // Heat Level Pointer
 		GameState = *(DWORD*)0x0925E90; // 3 = FE, 4&5 = Loading screen, 6 = Gameplay
@@ -1388,12 +1305,12 @@ DWORD WINAPI Thing(LPVOID)
 
 				if (ShowMessage)
 				{
-					ShowDialogBox("You have enabled Advanced Force Heat Level hack.^You can now press ChangeHeatLevel (PageUp as default) key to increase your heat level.", 0, DialogBoxButtonOK, DialogBoxReturn);
+					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled Advanced Force Heat Level hack.^You can now press ChangeHeatLevel (PageUp as default) key to increase your heat level.");
 					if (GameState == 6)
 					{
 						while (ButtonResult != DialogBoxReturn) Sleep(0);
 						ButtonResult = 0;
-						UnPause();
+						UnPause(NULL);
 					}
 				}
 			}
@@ -1405,12 +1322,12 @@ DWORD WINAPI Thing(LPVOID)
 
 				if (ShowMessage)
 				{
-					ShowDialogBox("You have disabled Advanced Force Heat Level hack.", 0, DialogBoxButtonOK, DialogBoxReturn);
+					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled Advanced Force Heat Level hack.");
 					if (GameState == 6)
 					{
 						while (ButtonResult != DialogBoxReturn) Sleep(0);
 						ButtonResult = 0;
-						UnPause();
+						UnPause(NULL);
 					}
 				}
 			}
@@ -1424,7 +1341,7 @@ DWORD WINAPI Thing(LPVOID)
 			{
 				heatLevel = (int)(floorf(heatLevel) - floorf(MinHeatLevel) + 1) % (int)(floorf(MaxHeatLevel) - floorf(MinHeatLevel) + 1) + MinHeatLevel;
 
-				injector::WriteMemory<float>(HeatLevelAddr, heatLevel - 0.005f, true); //Change it and leave .005 for make increment happen
+				*(float*)HeatLevelAddr = heatLevel - 0.005f; //Change it and leave .005 for make increment happen
 			}
 
 			while ((GetAsyncKeyState(hotkeyForceHeatLevel) & 0x8000) > 0) { Sleep(0); }
@@ -1473,7 +1390,7 @@ DWORD WINAPI Thing(LPVOID)
 				injector::WriteMemory<float>(0x742bb3, LowBeamAmount, true); // Right HeadLight
 				injector::WriteMemory<unsigned char>(0x8AF2AC, 'H', true);
 				break;
-			case 2: default:
+			default:
 				injector::WriteMemory<float>(0x742b94, HighBeamAmount, true); // Left HeadLight
 				injector::WriteMemory<float>(0x742bb3, HighBeamAmount, true); // Right HeadLight
 				injector::WriteMemory<unsigned char>(0x8AF2AC, 'H', true);
@@ -1497,20 +1414,21 @@ DWORD WINAPI Thing(LPVOID)
 
 				switch (raceMode)
 				{
-					case 1: selectedCar = *(DWORD*)(*(DWORD*)(raceOptions + 0x10) + 0xA8); break; //Freeze career car
-					case 4: selectedCar = *(DWORD*)(raceOptions + 0x2C + (raceType * 0x18)); break; // Freeze QR Car
-					case 32: selectedCar = *(DWORD*)(raceOptions + 0x2C); break; //Freeze my car
-					default: carHackEnabled = 0; break; // Don't enable it while not in a car select screen
+				case 1: selectedCar = *(DWORD*)(*(DWORD*)(raceOptions + 0x10) + 0xA8); break; //Freeze career car
+				case 4: selectedCar = *(DWORD*)(raceOptions + 0x2C + (raceType * 0x18)); break; // Freeze QR Car
+				case 32: selectedCar = *(DWORD*)(raceOptions + 0x2C); break; //Freeze my car
+				default: carHackEnabled = 0; break; // Don't enable it while not in a car select screen
 				}
 
 				if (carHackEnabled && ShowMessage)
 				{
-					ShowDialogBox("You have enabled Freeze Car Hack.^You can now use this car anywhere.", 0, DialogBoxButtonOK, DialogBoxReturn);
+					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled Freeze Car Hack.^You can now use this car anywhere.");
+
 					if (GameState == 6)
 					{
 						while (ButtonResult != DialogBoxReturn) Sleep(0);
 						ButtonResult = 0;
-						UnPause();
+						UnPause(NULL);
 					}
 				}
 
@@ -1521,16 +1439,18 @@ DWORD WINAPI Thing(LPVOID)
 				injector::WriteMemory<unsigned char>(0x6f48e7, 0x74, true);
 
 				// Fix Career Car
-				injector::WriteMemory<DWORD>(*(DWORD*)(raceOptions + 0x10) + 0xA8, careerCar, true);
+				unsigned int CareerCarPointer = *(DWORD*)(raceOptions + 0x10) + 0xA8;
+				*(unsigned int*)CareerCarPointer = careerCar;
 
 				if (ShowMessage)
 				{
-					ShowDialogBox("You have disabled Freeze Car Hack.^You can now select cars normally.", 0, DialogBoxButtonOK, DialogBoxReturn);
+					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled Freeze Car Hack.^You can now select cars normally.");
+
 					if (GameState == 6)
 					{
 						while (ButtonResult != DialogBoxReturn) Sleep(0);
 						ButtonResult = 0;
-						UnPause();
+						UnPause(NULL);
 					}
 				}
 			}
@@ -1541,15 +1461,31 @@ DWORD WINAPI Thing(LPVOID)
 
 		if (carHackEnabled)
 		{
+			unsigned int PointerToWrite;
 			// Freeze values
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C, selectedCar, true); // Sprint (0)
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C + (0x18), selectedCar, true); // Circuit (1)
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C + (2 * 0x18), selectedCar, true); // Drag (2)
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C + (3 * 0x18), selectedCar, true); // Lap Knockout (3)
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C + (4 * 0x18), selectedCar, true); // Tollbooth (4)
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C + (5 * 0x18), selectedCar, true); // Speedtrap (5)
-			injector::WriteMemory<DWORD>(raceOptions + 0x2C + (8 * 0x18), selectedCar, true); // Challenge (8)
-			injector::WriteMemory<DWORD>(*(DWORD*)(raceOptions + 0x10) + 0xA8, selectedCar, true); // Career
+			PointerToWrite = raceOptions + 0x2C;  // Sprint (0)
+			*(unsigned int*)PointerToWrite = selectedCar;
+			
+			PointerToWrite = raceOptions + 0x2C + (0x18); // Circuit (1)
+			*(unsigned int*)PointerToWrite = selectedCar;
+
+			PointerToWrite = raceOptions + 0x2C + (2 * 0x18); // Drag (2)
+			*(unsigned int*)PointerToWrite = selectedCar;
+
+			PointerToWrite = raceOptions + 0x2C + (3 * 0x18); // Lap Knockout (3)
+			*(unsigned int*)PointerToWrite = selectedCar;
+
+			PointerToWrite = raceOptions + 0x2C + (4 * 0x18); // Tollbooth (4)
+			*(unsigned int*)PointerToWrite = selectedCar;
+
+			PointerToWrite = raceOptions + 0x2C + (5 * 0x18); // Speedtrap (5)
+			*(unsigned int*)PointerToWrite = selectedCar;
+
+			PointerToWrite = raceOptions + 0x2C + (8 * 0x18); // Challenge (8)
+			*(unsigned int*)PointerToWrite = selectedCar;
+
+			PointerToWrite = *(DWORD*)(raceOptions + 0x10) + 0xA8; // Career
+			*(unsigned int*)PointerToWrite = selectedCar;
 
 			injector::WriteMemory<unsigned char>(0x6f48e7, 0xEB, true); // Use selected cars at Challenge Series
 		}
@@ -1557,7 +1493,7 @@ DWORD WINAPI Thing(LPVOID)
 		// Drunk Driver
 		if ((GetAsyncKeyState(hotkeyDrunkDriver) & 1) && (GameState == 6)) // When pressed "Drunk Driver" key
 		{
-			injector::WriteMemory<unsigned char>(0x90d5fa, 0x01, true);
+			*(unsigned char*)0x0090D5FA = 1;
 
 			while ((GetAsyncKeyState(hotkeyDrunkDriver) & 0x8000) > 0) { Sleep(0); }
 		}
@@ -1571,7 +1507,7 @@ DWORD WINAPI Thing(LPVOID)
 
 			if (UnlockAllThings)
 			{
-				injector::WriteMemory<unsigned char>(0x926124, 0x01, true);
+				*(unsigned char*)0x926124 = 1;
 
 				// Read more bins (Adds hidden tracks to list if option is enabled)
 				injector::WriteMemory<unsigned char>(0x7ba6e0, 18, true);
@@ -1579,20 +1515,23 @@ DWORD WINAPI Thing(LPVOID)
 
 				if (ShowMessage)
 				{
-					if (ShowHiddenTracks) ShowDialogBox("You have enabled UnlockAllThings hack.^Everything is now unlocked. You can also play hidden tracks from Quick Race menu. Enjoy!", 0, DialogBoxButtonOK, DialogBoxReturn);
-					if (!ShowHiddenTracks) ShowDialogBox("You have enabled UnlockAllThings hack.^Everything is now unlocked. Enjoy!", 0, DialogBoxButtonOK, DialogBoxReturn);
+					if (ShowHiddenTracks) //ShowDialogBox("You have enabled UnlockAllThings hack.^Everything is now unlocked. You can also play hidden tracks from Quick Race menu. Enjoy!", 0, DialogBoxButtonOK, DialogBoxReturn);
+						DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled UnlockAllThings hack.^Everything is now unlocked. You can also play hidden tracks from Quick Race menu. Enjoy!");
+					if (!ShowHiddenTracks) //ShowDialogBox("You have enabled UnlockAllThings hack.^Everything is now unlocked. Enjoy!", 0, DialogBoxButtonOK, DialogBoxReturn);
+						DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled UnlockAllThings hack.^Everything is now unlocked. Enjoy!");
+
 					if (GameState == 6)
 					{
 						while (ButtonResult != DialogBoxReturn) Sleep(0);
 						ButtonResult = 0;
-						UnPause();
+						UnPause(NULL);
 					}
 				}
 
 			}
 			else
 			{
-				injector::WriteMemory<unsigned char>(0x926124, 0x00, true);
+				*(unsigned char*)0x926124 = 0;
 
 				// Fix Bin Reading
 				injector::WriteMemory<unsigned char>(0x7ba6e0, 21, true);
@@ -1600,12 +1539,14 @@ DWORD WINAPI Thing(LPVOID)
 
 				if (ShowMessage)
 				{
-					ShowDialogBox("You have disabled UnlockAllThings hack.^Unlock status of everything is returned back to normal.", 0, DialogBoxButtonOK, DialogBoxReturn);
+					//ShowDialogBox("You have disabled UnlockAllThings hack.^Unlock status of everything is returned back to normal.", 0, DialogBoxButtonOK, DialogBoxReturn);
+					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled UnlockAllThings hack.^Unlock status of everything is returned back to normal.");
+
 					if (GameState == 6)
 					{
 						while (ButtonResult != DialogBoxReturn) Sleep(0);
 						ButtonResult = 0;
-						UnPause();
+						UnPause(NULL);
 					}
 				}
 			}
@@ -1622,7 +1563,8 @@ DWORD WINAPI Thing(LPVOID)
 		if (raceOptions && *(unsigned char*)(raceOptions + 0x18) == 0x08)
 		{
 			injector::WriteMemory<unsigned char>(0x7AC920, 0x00, true);
-			injector::WriteMemory<unsigned char>(raceOptions + 0xE8, 0x01, true);
+			unsigned int PointerToWrite = raceOptions + 0xE8;
+			*(unsigned char*)PointerToWrite = 1;
 		}
 		else // unfreeze cops option for circuit
 		{
@@ -1637,76 +1579,72 @@ DWORD WINAPI Thing(LPVOID)
 				while ((GetAsyncKeyState(VK_LSHIFT) & 0x8000) > 0)
 				{
 					Sleep(0);
-					if (GetAsyncKeyState(49) & 1) 
-					{ 
-						injector::WriteMemory<unsigned char>(0x9B0908, 0x01, true);
+					if (GetAsyncKeyState(49) & 1)
+					{
+						*(unsigned int*)0x9B0908 = 1;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Your current position data is saved to Slot 1.", 0, DialogBoxButtonOK, DialogBoxReturn);
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 1, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 1);
 
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
-						while ((GetAsyncKeyState(49) & 0x8000) > 0) Sleep(0); 
+						while ((GetAsyncKeyState(49) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(50) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B0908, 0x02, true);
+						*(unsigned int*)0x9B0908 = 2;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Your current position data is saved to Slot 2.", 0, DialogBoxButtonOK, DialogBoxReturn);
-
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 1, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 2);
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(50) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(51) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B0908, 0x03, true);
+						*(unsigned int*)0x9B0908 = 3;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Your current position data is saved to Slot 3.", 0, DialogBoxButtonOK, DialogBoxReturn);
-
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 1, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 3);
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(51) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(52) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B0908, 0x04, true);
+						*(unsigned int*)0x9B0908 = 4;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Your current position data is saved to Slot 4.", 0, DialogBoxButtonOK, DialogBoxReturn);
-
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 1, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 4);
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(52) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(53) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B0908, 0x05, true);
+						*(unsigned int*)0x9B0908 = 5;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Your current position data is saved to Slot 5.", 0, DialogBoxButtonOK, DialogBoxReturn);
-
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 5);
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(53) & 0x8000) > 0) Sleep(0);
 					}
-					
+
 				}
 			}
 
@@ -1717,70 +1655,69 @@ DWORD WINAPI Thing(LPVOID)
 					Sleep(0);
 					if (GetAsyncKeyState(49) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B090C, 0x01, true);
+						*(unsigned int*)0x009B090C = 1;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Loaded position data from Slot 1.", 0, DialogBoxButtonOK, DialogBoxReturn);
-
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 1);
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(49) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(50) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B090C, 0x02, true);
+						*(unsigned int*)0x009B090C = 2;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Loaded position data from Slot 2.", 0, DialogBoxButtonOK, DialogBoxReturn);
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 2);
 
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(50) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(51) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B090C, 0x03, true);
+						*(unsigned int*)0x009B090C = 3;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Loaded position data from Slot 3.", 0, DialogBoxButtonOK, DialogBoxReturn);
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 3);
 
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(51) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(52) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B090C, 0x04, true);
+						*(unsigned int*)0x009B090C = 4;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Loaded position data from Slot 4.", 0, DialogBoxButtonOK, DialogBoxReturn);
-							
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 4);
+
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(52) & 0x8000) > 0) Sleep(0);
 					}
 
 					if (GetAsyncKeyState(53) & 1)
 					{
-						injector::WriteMemory<unsigned char>(0x9B090C, 0x05, true);
+						*(unsigned int*)0x009B090C = 5;
 						if (ShowMessage)
 						{
-							ShowDialogBox("Loaded position data from Slot 5.", 0, DialogBoxButtonOK, DialogBoxReturn);
-							
+							DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 5);
+
 							while (ButtonResult != DialogBoxReturn) Sleep(0);
 							ButtonResult = 0;
-							UnPause();
+							UnPause(NULL);
 						}
 						while ((GetAsyncKeyState(53) & 0x8000) > 0) Sleep(0);
 					}
@@ -1801,8 +1738,8 @@ DWORD WINAPI Thing(LPVOID)
 					injector::WriteMemory<int>(0x0047CC79, 0x00895228, true);
 					injector::WriteMemory<int>(0x0047CC9B, 0x00895228, true);
 					injector::WriteMemory<int>(0x0047CC28, 0x00895228, true);
-					injector::WriteMemory<int>(0x0091102C, 0x00000000, true);
-					CameraChange();
+					*(unsigned int*)0x0091102C = 0;
+					CameraAI_Director_Reset();
 					injector::WriteMemory<int>(0x0047CC79, 0x00894C20, true);
 					injector::WriteMemory<int>(0x0047CC9B, 0x00894C20, true);
 					injector::WriteMemory<int>(0x0047CC28, 0x00894C20, true);
@@ -1810,16 +1747,14 @@ DWORD WINAPI Thing(LPVOID)
 
 				if (*(int*)0x00925E90 == 6 && !DebugWorldCamera)
 				{
-					CameraChange();
-					injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true); 
+					CameraAI_Director_Reset();
+					injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
 				}
-				
+
 				while ((GetAsyncKeyState(VK_BACK) & 0x8000) > 0) { Sleep(0); }
 			}
 		}
-
 	}
-	return 0;
 }
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD reason, LPVOID /*lpReserved*/)
