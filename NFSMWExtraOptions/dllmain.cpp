@@ -42,11 +42,13 @@ void(__stdcall *CameraAI_Director_Reset)() = (void(__stdcall*)())0x0047CC50;
 int(__cdecl *UnPause)(const void* unk) = (int(__cdecl*)(const void*))0x632190;
 unsigned int(__cdecl *stringhash32)(const char* k) = (unsigned int (__cdecl*)(const char*))0x005CC240;
 unsigned int(__thiscall *CustomizeCategoryScreen_AddCustomOption)(void* TheThis, const char* unk1, unsigned int unk2, unsigned int unk3, unsigned int unk4) = (unsigned int(__thiscall*)(void*, const char*, unsigned int, unsigned int, unsigned int))0x007BB560;
+const char*(__thiscall* GRaceParameters_GetEventID)(void* GRaceParameters) = (const char*(__thiscall*)(void*))0x005FBA70;
 
 #define DialogBoxReturn 0x1337DBFF
 #define DialogBoxButtonOK 0x417B2601
 //#define COPYRIGHTOBJHASH 0x5B9D88B9 // not needed anymore
 #define ESRBOBJHASH 0xBDE7FA72
+#define EVENTIDOBJHASH 0xBBF970CD
 #define TAKEOVERSTRING "NFSMW Extra Options - © 2017 ExOpts Team. No Rights Reserved."
 
 void __declspec(naked) CameraNamesCodeCave()
@@ -651,6 +653,34 @@ void __declspec(naked) DialogBoxReturnValue(void* Pointer)
 		mov ButtonResult, eax
 		jmp DialogBoxReturnValueExit
 	}
+}
+
+int FEngFindObjectHook(const char* pkg_name, unsigned int obj_hash)
+{
+	void* GRaceParameters;
+	_asm mov eax, [esi+0x108]
+	_asm mov GRaceParameters, eax
+
+	FEPrintf(pkg_name, obj_hash, GRaceParameters_GetEventID(GRaceParameters));
+	return 0;
+}
+
+int FEngFindObjectHook2(const char* pkg_name, unsigned int obj_hash)
+{
+	void* GRaceParameters;
+	_asm mov GRaceParameters, ebx
+
+	FEPrintf(pkg_name, obj_hash, GRaceParameters_GetEventID(GRaceParameters));
+	return 0;
+}
+
+int __stdcall FindPackageHook(const char* pkg_name)
+{
+	void* GRaceParameters;
+	_asm mov GRaceParameters, edi
+
+	FEPrintf(pkg_name, EVENTIDOBJHASH, GRaceParameters_GetEventID(GRaceParameters));
+	return 0;
 }
 
 void Init()
@@ -1289,6 +1319,15 @@ void Init()
 		// Helicopter
 		injector::MakeNOP(0x42BAD6, 6, true);
 	}
+
+	// Quick race EventID enable
+	injector::MakeCALL(0x007AB0F4, FEngFindObjectHook, true);
+
+	// Challenge Series EventID enable
+	injector::MakeCALL(0x007A42AB, FEngFindObjectHook2, true);
+
+	// SafeHouse EventID enable
+	injector::MakeCALL(0x00547995, FindPackageHook, true);
 
 	// Other Things
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&Thing, NULL, 0, NULL);
