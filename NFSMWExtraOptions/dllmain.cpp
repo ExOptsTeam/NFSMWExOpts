@@ -45,8 +45,9 @@ unsigned int(__thiscall *CustomizeCategoryScreen_AddCustomOption)(void* TheThis,
 
 #define DialogBoxReturn 0x1337DBFF
 #define DialogBoxButtonOK 0x417B2601
-#define COPYRIGHTOBJHASH 0x5B9D88B9
-#define TAKEOVERSTRING "© 2005 Electronic Arts Inc. All Rights Reserved.^NFSMW Extra Options - © 2017 ExOpts Team. No Rights Reserved."
+//#define COPYRIGHTOBJHASH 0x5B9D88B9 // not needed anymore
+#define ESRBOBJHASH 0xBDE7FA72
+#define TAKEOVERSTRING "NFSMW Extra Options - © 2017 ExOpts Team. No Rights Reserved."
 
 void __declspec(naked) CameraNamesCodeCave()
 {
@@ -532,8 +533,15 @@ void __cdecl GetGameVersionNumberStringHook(char* buffer, int bufsize)
 	const char* PackageName;
 	_asm mov eax, [esi+0x10]
 	_asm mov PackageName, eax
-	sprintf(buffer, "%d.%d", 1, 3);
-	FEPrintf(PackageName, COPYRIGHTOBJHASH, TAKEOVERSTRING);
+
+	sprintf(buffer, "1.3"); // print the game version string
+	unsigned int* TheESRBObject = (unsigned int*)FEObject_FindObject(PackageName, ESRBOBJHASH);
+	TheESRBObject[0x1A] = strlen(TAKEOVERSTRING) + 1; // FEObject@0x68 = string length
+
+	FEColor TakeoverColor = { 255, 255, 255, 255 };
+	FEObject_SetColor((void*)TheESRBObject, TakeoverColor, 0);
+
+	FEPrintf_Obj(PackageName, (void*)TheESRBObject, TAKEOVERSTRING); // use the FEObject immediately instead of searching for it again
 }
 
 void __declspec(naked) HeliBountyFixCodeCave()
@@ -1777,4 +1785,3 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD reason, LPVOID /*lpReserved*/)
 	}
 	return TRUE;
 }
-

@@ -48,10 +48,21 @@ struct feDialogConfig
 	unsigned int unk7; // Unknown
 };
 
+struct FEColor
+{
+	unsigned int Blue;
+	unsigned int Green;
+	unsigned int Red;
+	unsigned int Alpha;
+};
+
 int(__cdecl *DialogInterface_ShowDialog)(feDialogConfig* DialogConfig) = (int(__cdecl*)(feDialogConfig*))SHOWDIALOG_ADDRESS; // return value is its DialogNum (dialog number)
 bool(__cdecl *DialogInterface_SetButtonText)(int ButtonNumber, const char* Text, bool IsWideString) = (bool(__cdecl*)(int, const char*, bool))SETBUTTONTEXT_ADDRESS;
 int(__cdecl *FEPrintf)(const char* pkg_name, unsigned int obj_hash, const char* format, ...) = (int(__cdecl*)(const char*, unsigned int, const char*, ...))FEPRINTF_ADDRESS;
+int(__cdecl *FEPrintf_Obj)(const char* pkg_name, void *FEObject, const char* format, ...) = (int(__cdecl*)(const char*, void*, const char*, ...))FEPRINTF2_ADDRESS;
 int(__cdecl *DialogInterface_DismissDialog)(int DialogNum) = (int(__cdecl*)(int))DISMISSDIALOG_ADDRESS;
+void*(__cdecl *FEObject_FindObject)(const char *pkg_name, unsigned int obj_hash) = (void*(__cdecl*)(const char*, unsigned int))FENGFINDOBJECT_ADDRESS;
+void(__thiscall *FEObject_SetColor)(void* FEObject, FEColor &color, bool bRelative) = (void(__thiscall*)(void*, FEColor&, bool))FEOBJECT_SETCOLOR_ADDRESS;
 
 int __cdecl CurrentDialog_Dismiss()
 {
