@@ -8,7 +8,7 @@
 #include <math.h>
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, LowBeamAmount, HighBeamAmount, MaxHeatLevel, MinHeatLevel, copLightsAmount, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation;
-int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadLights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount;
+int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadLights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount, customWidth, customHeight;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headLightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars;
 bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, EnableCustomizationForAll, AlwaysRain, WindowedMode, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, onQuickRaceMenu, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState;
@@ -788,6 +788,8 @@ void Init()
 
 	// Misc
 	WindowedMode = iniReader.ReadInteger("Misc", "WindowedMode", 0) == 1;
+	customWidth = iniReader.ReadInteger("Misc", "CustomWidth", 0);
+	customHeight = iniReader.ReadInteger("Misc", "CustomHeight", 0);
 	SkipMovies = iniReader.ReadInteger("Misc", "SkipMovies", 0) == 1;
 	EnableSound = iniReader.ReadInteger("Misc", "EnableSound", 1) == 1;
 	EnableMusic = iniReader.ReadInteger("Misc", "EnableMusic", 1) == 1;
@@ -1319,6 +1321,24 @@ void Init()
 		// Helicopter
 		injector::MakeNOP(0x42BAD6, 6, true);
 	}
+
+    // Custom Resolution
+    if (customWidth && customHeight)
+    {
+	    BYTE flag = 1;
+
+	    // Patch the switch jump
+	    injector::MakeNOP(0x6C27DE, 7, true);
+
+	    // Patch width
+	    injector::WriteMemory<DWORD>(0x6C27EF, customWidth, true);
+
+	    // Patch height
+	    injector::WriteMemory<DWORD>(0x6C27F5, customHeight, true);
+
+	    // Patch loaded flag (reset device)
+	    injector::WriteMemory<unsigned char>(0x982C39, flag, true);
+    }
 
 	// Quick race EventID enable
 	injector::MakeCALL(0x007AB0F4, FEngFindObjectHook, true);
