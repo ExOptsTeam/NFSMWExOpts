@@ -37,6 +37,12 @@ DWORD AnnounceBountyReward = 0x595C37;
 DWORD VTCodeCaveExit = 0x73E361;
 DWORD DialogBoxReturnValueExit = 0x007C7250;
 
+// Timebug fixing stuff
+DWORD GlobalTimerAddress = 0x009885D8;
+DWORD TimerAddress = 0x009142DC;
+float PreviousRaceTime = 0.0f;
+bool  TimebugFixEnabled = 0;
+
 // Properly implemented functions for calling
 void(__stdcall *CameraAI_Director_Reset)() = (void(__stdcall*)())0x0047CC50;
 int(__cdecl *UnPause)(const void* unk) = (int(__cdecl*)(const void*))0x632190;
@@ -793,6 +799,9 @@ void Init()
 	EnableMusic = iniReader.ReadInteger("Misc", "EnableMusic", 1) == 1;
 	ShowMessage = iniReader.ReadInteger("Misc", "ShowMessage", 1) == 1;
 
+	// Timebug fix
+	TimebugFixEnabled = iniReader.ReadInteger("Misc", "FixTimebug", 1) == 1;
+
 	// Limit values to fix increment & decrement behaviour breaking
 
 	// loop around values
@@ -1333,6 +1342,19 @@ void Init()
 	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&Thing, NULL, 0, NULL);
 }
 
+// Fixes timbug
+void FixTimebug()
+{
+	if (!TimebugFixEnabled)
+		return;
+	float tmpTime = injector::ReadMemory<float>(TimerAddress);
+	if (tmpTime < PreviousRaceTime)
+	{
+		injector::WriteMemory<float>(GlobalTimerAddress, 0.0f);
+	}
+	PreviousRaceTime = tmpTime;
+}
+
 DWORD WINAPI Thing(LPVOID)
 {
 	while (true)
@@ -1801,6 +1823,9 @@ DWORD WINAPI Thing(LPVOID)
 				while ((GetAsyncKeyState(VK_BACK) & 0x8000) > 0) { Sleep(0); }
 			}
 		}
+
+		// Fix timebug
+		FixTimebug();
 	}
 }
 
