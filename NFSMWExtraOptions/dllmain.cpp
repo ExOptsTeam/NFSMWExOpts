@@ -949,10 +949,10 @@ void Init()
 
 	// Menu
 	ShowTollbooth = iniReader.ReadInteger("Menu", "ShowTollbooth", 1) == 1;
-	ShowChallenge = iniReader.ReadInteger("Menu", "ShowChallenge", 1) == 1;
+	ShowChallenge = iniReader.ReadInteger("Menu", "ShowChallenge", 0) == 1;
 	ShowMoreRaceOptions = iniReader.ReadInteger("Menu", "ShowMoreRaceOptions", 1) == 1;
 	ShowMoreCustomizationOptions = iniReader.ReadInteger("Menu", "ShowMoreCustomizationOptions", 1) == 1;
-	HideOnline = iniReader.ReadInteger("Menu", "ShowOnline", 0) == 0;
+	HideOnline = iniReader.ReadInteger("Menu", "ShowOnline", 1) == 0;
 	ShowOnlineOpts = iniReader.ReadInteger("Menu", "ShowOnlineOpts", 0) == 1;
 	ShowSubs = iniReader.ReadInteger("Menu", "ShowSubs", 0) == 1;
 	EnablePresetAndDebugCars = iniReader.ReadInteger("Menu", "ShowMoreCarCategories", 0) == 1;
@@ -960,7 +960,7 @@ void Init()
 	ShowDebugCarCustomize = iniReader.ReadInteger("Menu", "ShowDebugCarCustomize", 0) == 1;
 	ShowDebugEventID = iniReader.ReadInteger("Menu", "ShowDebugEventID", 0) == 1;
 	ShowTimeOfDay = iniReader.ReadInteger("Menu", "ShowTimeOfDay", 0) == 1;
-	ShowHiddenTracks = iniReader.ReadInteger("Menu", "ShowHiddenTracks", 1);
+	ShowHiddenTracks = iniReader.ReadInteger("Menu", "ShowHiddenTracks", 0);
 	BetterRandomRaces = iniReader.ReadInteger("Menu", "BetterRandomRaces", 0) == 1;
 	maxBlacklist = iniReader.ReadInteger("Menu", "MaximumBlacklistRival", 15);
 	ReplayBlacklistRaces = iniReader.ReadInteger("Menu", "ReplayBlacklistRaces", 0) == 1;
@@ -988,7 +988,7 @@ void Init()
 	HighBeamAmount = iniReader.ReadFloat("Gameplay", "HighBeamBrightness", 1.00f);
 	removeSceneryGroupDoor = iniReader.ReadInteger("Gameplay", "RemoveOldBridgeBarrier", 0) == 1;
 	removePlayerBarriers = iniReader.ReadInteger("Gameplay", "RemoveNeonBarriers", 0) == 1;
-	CarbonStyleRaceProgress = iniReader.ReadInteger("Gameplay", "ShowPercentOn1LapRaces", 0) == 1;
+	CarbonStyleRaceProgress = iniReader.ReadInteger("Gameplay", "ShowPercentOn1LapRaces", 1) == 1;
 	StartingCashDWORD = iniReader.ReadInteger("Gameplay", "StartingCash", 0);
 	UnlockAllThings = iniReader.ReadInteger("Gameplay", "UnlockAllThings", 0) == 1;
 	ForceBlackEdition = iniReader.ReadInteger("Gameplay", "ForceBlackEdition", 1) == 1;
@@ -1039,7 +1039,7 @@ void Init()
 	HelicopterFix = iniReader.ReadInteger("Fixes", "HelicopterBountyFix", 1) == 1;
 	X10Fix = iniReader.ReadInteger("Fixes", "ZeroBountyFix", 1) == 1;
 	TimeBugFix = iniReader.ReadInteger("Fixes", "TimeBugFix", 1) == 1;
-	CarSkinFix = iniReader.ReadInteger("Fixes", "CarSkinFix", 1) == 1;
+	CarSkinFix = iniReader.ReadInteger("Fixes", "CarSkinFix", 0) == 1;
 	ImmobileColFix = iniReader.ReadInteger("Fixes", "ImmobileCollisionsFix", 1) == 1;
 
 	// Misc
@@ -1071,8 +1071,9 @@ void Init()
 	medTraffic %= 101;
 	highTraffic %= 101;
 
-	SelectableMarkerCount %= 7;
-	if (SelectableMarkerCount = 0) SelectableMarkerCount++;
+	SelectableMarkerCount--;
+	SelectableMarkerCount %= 6;
+	SelectableMarkerCount++;
 
 	// Allow Multiple Instances
 	if (AllowMultipleInstances)
