@@ -8,9 +8,9 @@
 #include <math.h>
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, LowBeamAmount, HighBeamAmount, MaxHeatLevel, MinHeatLevel, copLightsAmount, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
-int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadLights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount;
-unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headLightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount;
-bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, ShowMoreCustomizationOptions, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter;
+int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount;
+unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount;
+bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, ShowMoreCustomizationOptions, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
 HWND windowHandle;
 
@@ -922,7 +922,7 @@ void Init()
 	hotkeyToggleForceHeat = iniReader.ReadInteger("Hotkeys", "HeatLevelHack", 118); //F7
 	hotkeyForceHeatLevel = iniReader.ReadInteger("Hotkeys", "ChangeHeatLevel", 33); //PageUp
 	hotkeyToggleCopLights = iniReader.ReadInteger("Hotkeys", "CopLights", 79); // O
-	hotkeyToggleHeadLights = iniReader.ReadInteger("Hotkeys", "HeadLights", 72); // H
+	hotkeyToggleHeadlights = iniReader.ReadInteger("Hotkeys", "Headlights", 72); // H
 	hotkeyCarHack = iniReader.ReadInteger("Hotkeys", "FreezeCar", 115); //F4
 	hotkeyUnlockAllThings = iniReader.ReadInteger("Hotkeys", "UnlockAllThings", 116); //F5
 	hotkeyDrunkDriver = iniReader.ReadInteger("Hotkeys", "AutoDrive", 117); //F6
@@ -983,7 +983,7 @@ void Init()
 	CarScale = iniReader.ReadFloat("Gameplay", "CarScale", 1.0f);
 	copLightsEnabled = iniReader.ReadInteger("Gameplay", "CopLightsMode", 0) == 1;
 	copLightsAmount = iniReader.ReadFloat("Gameplay", "CopLightsBrightness", 1.00f);
-	headLightsMode = iniReader.ReadInteger("Gameplay", "HeadLightsMode", 2);
+	headlightsMode = iniReader.ReadInteger("Gameplay", "HeadlightsMode", 2);
 	LowBeamAmount = iniReader.ReadFloat("Gameplay", "LowBeamBrightness", 0.75f);
 	HighBeamAmount = iniReader.ReadFloat("Gameplay", "HighBeamBrightness", 1.00f);
 	removeSceneryGroupDoor = iniReader.ReadInteger("Gameplay", "RemoveOldBridgeBarrier", 0) == 1;
@@ -1045,6 +1045,7 @@ void Init()
 	// Misc
 	WindowedMode = iniReader.ReadInteger("Misc", "WindowedMode", 0);
 	SkipMovies = iniReader.ReadInteger("Misc", "SkipMovies", 0) == 1;
+	SkipNISs = iniReader.ReadInteger("Misc", "SkipNISs", 0) == 1;
 	EnableSound = iniReader.ReadInteger("Misc", "EnableSound", 1) == 1;
 	EnableMusic = iniReader.ReadInteger("Misc", "EnableMusic", 1) == 1;
 	ShowMessage = iniReader.ReadInteger("Misc", "ShowMessage", 1) == 1;
@@ -1063,7 +1064,7 @@ void Init()
 	maxOpponents %= 16;
 	maxOpponentsRandomQR %= 16;
 
-	headLightsMode %= 3;
+	headlightsMode %= 3;
 
 	randomizeCount %= 501;
 
@@ -1306,21 +1307,21 @@ void Init()
 	if (ShowOnlineOpts) injector::MakeNOP(0x5290B2, 2, true); // Show Online Options menu
 
 	// Load headlights preferences
-	switch (headLightsMode)
+	switch (headlightsMode)
 	{
 	case 0:
-		injector::WriteMemory<float>(0x742b94, 0, true); // Left HeadLight
-		injector::WriteMemory<float>(0x742bb3, 0, true); // Right HeadLight
+		injector::WriteMemory<float>(0x742b94, 0, true); // Left Headlight
+		injector::WriteMemory<float>(0x742bb3, 0, true); // Right Headlight
 		injector::WriteMemory<unsigned char>(0x8AF2AC, 0x00, true); //Remove flare
 		break;
 	case 1:
-		injector::WriteMemory<float>(0x742b94, LowBeamAmount, true); // Left HeadLight
-		injector::WriteMemory<float>(0x742bb3, LowBeamAmount, true); // Right HeadLight
+		injector::WriteMemory<float>(0x742b94, LowBeamAmount, true); // Left Headlight
+		injector::WriteMemory<float>(0x742bb3, LowBeamAmount, true); // Right Headlight
 		injector::WriteMemory<unsigned char>(0x8AF2AC, 'H', true);
 		break;
 	case 2: default:
-		injector::WriteMemory<float>(0x742b94, HighBeamAmount, true); // Left HeadLight
-		injector::WriteMemory<float>(0x742bb3, HighBeamAmount, true); // Right HeadLight
+		injector::WriteMemory<float>(0x742b94, HighBeamAmount, true); // Left Headlight
+		injector::WriteMemory<float>(0x742bb3, HighBeamAmount, true); // Right Headlight
 		injector::WriteMemory<unsigned char>(0x8AF2AC, 'H', true);
 		break;
 	}
@@ -1369,6 +1370,11 @@ void Init()
 	if (SkipMovies)
 	{
 		injector::WriteMemory<unsigned char>(0x926144, SkipMovies, true);
+	}
+
+	if (SkipNISs)
+	{
+		injector::WriteMemory<unsigned char>(0x9260A4, SkipNISs, true);
 	}
 
 	if (!EnableSound)
@@ -1946,32 +1952,32 @@ DWORD WINAPI Thing(LPVOID)
 		}
 
 		// Headlights
-		if ((GetAsyncKeyState(hotkeyToggleHeadLights) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Toggle Head Lights" key
+		if ((GetAsyncKeyState(hotkeyToggleHeadlights) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Toggle Head Lights" key
 		{
-			headLightsMode = (headLightsMode + 1) % 3; // 0, 1 or 2
+			headlightsMode = (headlightsMode + 1) % 3; // 0, 1 or 2
 			CIniReader iniReader("NFSMWExtraOptionsSettings.ini");
-			iniReader.WriteInteger("Gameplay", "HeadLightsMode", headLightsMode);
+			iniReader.WriteInteger("Gameplay", "HeadlightsMode", headlightsMode);
 
-			switch (headLightsMode)
+			switch (headlightsMode)
 			{
 			case 0:
-				injector::WriteMemory<float>(0x742b94, 0, true); // Left HeadLight
-				injector::WriteMemory<float>(0x742bb3, 0, true); // Right HeadLight
+				injector::WriteMemory<float>(0x742b94, 0, true); // Left Headlight
+				injector::WriteMemory<float>(0x742bb3, 0, true); // Right Headlight
 				injector::WriteMemory<unsigned char>(0x8AF2AC, 0x00, true);
 				break;
 			case 1:
-				injector::WriteMemory<float>(0x742b94, LowBeamAmount, true); // Left HeadLight
-				injector::WriteMemory<float>(0x742bb3, LowBeamAmount, true); // Right HeadLight
+				injector::WriteMemory<float>(0x742b94, LowBeamAmount, true); // Left Headlight
+				injector::WriteMemory<float>(0x742bb3, LowBeamAmount, true); // Right Headlight
 				injector::WriteMemory<unsigned char>(0x8AF2AC, 'H', true);
 				break;
 			default:
-				injector::WriteMemory<float>(0x742b94, HighBeamAmount, true); // Left HeadLight
-				injector::WriteMemory<float>(0x742bb3, HighBeamAmount, true); // Right HeadLight
+				injector::WriteMemory<float>(0x742b94, HighBeamAmount, true); // Left Headlight
+				injector::WriteMemory<float>(0x742bb3, HighBeamAmount, true); // Right Headlight
 				injector::WriteMemory<unsigned char>(0x8AF2AC, 'H', true);
 				break;
 			}
 
-			while ((GetAsyncKeyState(hotkeyToggleHeadLights) & 0x8000) > 0) { Sleep(ThreadDelay); }
+			while ((GetAsyncKeyState(hotkeyToggleHeadlights) & 0x8000) > 0) { Sleep(ThreadDelay); }
 		}
 
 
