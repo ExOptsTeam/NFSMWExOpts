@@ -9,7 +9,7 @@
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, LowBeamAmount, HighBeamAmount, MaxHeatLevel, MinHeatLevel, copLightsAmount, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyDrunkDriver, randomizeCount;
-unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, GarageCarSlotLimit;
+unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit;
 bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, ShowMoreCustomizationOptions, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
 HWND windowHandle;
@@ -998,7 +998,7 @@ void Init()
 	NoCatchUp = iniReader.ReadInteger("Gameplay", "NoCatchUp", 0) == 1;
 	NoRevLimiter = iniReader.ReadInteger("Gameplay", "NoRevLimiter", 0) == 1;
 	SelectableMarkerCount = iniReader.ReadInteger("Gameplay", "SelectableMarkerCount", 2);
-   GarageCarSlotLimit = iniReader.ReadInteger("Gameplay", "GarageCarSlotLimit", 10);
+        PurchasedCarLimit = iniReader.ReadInteger("Gameplay", "PurchasedCarLimit", 10);
 	SBRechargeTime = iniReader.ReadFloat("Gameplay", "SBRechargeTime", 25.0f);
 	SBRechargeSpeedLimit = iniReader.ReadFloat("Gameplay", "SBRechargeSpeedLimit", 100.0f);
 	SBMassMultiplier = iniReader.ReadFloat("Gameplay", "SBMassMultiplier", 2.0f);
@@ -1077,8 +1077,8 @@ void Init()
 	SelectableMarkerCount %= 6;
 	SelectableMarkerCount++;
 
-   GarageCarSlotLimit %= 26;
-   GarageCarSlotLimit--;
+        PurchasedCarLimit %= 26;
+        PurchasedCarLimit--;
    
 	// Allow Multiple Instances
 	if (AllowMultipleInstances)
@@ -1780,8 +1780,8 @@ void Init()
 	injector::WriteMemory<unsigned char>(0x7A7A3C, SelectableMarkerCount, true);
 	injector::WriteMemory<unsigned char>(0x7A7ABE, SelectableMarkerCount, true);
    
-   // Garage Car Slot Limit
-   injector::WriteMemory<unsigned char>(0x7C1A77, GarageCarSlotLimit, true);
+        // Garage Car Slot Limit
+        injector::WriteMemory<unsigned char>(0x7C1A77, PurchasedCarLimit, true);
 
 	// Debug Cam Speed
 	injector::WriteMemory<float>(0x8EDEA4, DebugCameraTurboSpeed, true);
