@@ -7,14 +7,14 @@
 #include "..\includes\IniReader.h"
 #include <math.h>
 
-float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, LowBeamAmount, HighBeamAmount, MaxHeatLevel, MinHeatLevel, copLightsAmount, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
-int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera;
+float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
+int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit;
-bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, ShowMoreCustomizationOptions, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools;
+bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, ShowMoreCustomizationOptions, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
 HWND windowHandle;
 
-DWORD WINAPI Thing(LPVOID);
+void Thing();
 
 bool forceHeatLevel = 0, carHackEnabled = 0, once1 = 0, once2 = 0, once3 = 0, IsOnFocus, AutoDrive, ToggleCops = 1;
 DWORD ButtonResult = 0;
@@ -72,6 +72,8 @@ void(*Game_SetCopsEnabled)(bool AreCopsEnabled) = (void(*)(bool))0x604F40;
 bool(__thiscall *PVehicle_IsGlareOn)(DWORD* PVehicle, int VehicleFXID) = (bool(__thiscall*)(DWORD*, int))0x6881C0;
 void(__thiscall *PVehicle_GlareOn)(DWORD* PVehicle, int VehicleFXID) = (void(__thiscall*)(DWORD*, int))0x669360;
 void(__thiscall *PVehicle_GlareOff)(DWORD* PVehicle, int VehicleFXID) = (void(__thiscall*)(DWORD*, int))0x669380;
+void(__thiscall *GRaceDatabase_GetScoreInfo)(void* GRaceParameters, int EventHash) = (void(__thiscall*)(void*, int))0x5DCA70;
+const char* (__thiscall* GRaceDatabase_GetNextDDayRace)(void* GRaceParameters) = (const char* (__thiscall*)(void*))0x600C30;
 
 DWORD GRaceDatabase_GetRaceParameters = 0x005DC930;
 DWORD GRaceParameters_GetEventHash = 0x005FAB40;
@@ -85,7 +87,7 @@ DWORD SplitScreenCodeCaveExit = 0x7AA82A;
 #define DialogBoxButtonOK 0x417B2601
 #define ESRBOBJHASH 0xBDE7FA72
 #define EVENTIDOBJHASH 0xBBF970CD
-#define TAKEOVERSTRING "NFSMW Extra Options - © 2018 ExOpts Team. No Rights Reserved."
+#define TAKEOVERSTRING "NFSMW Extra Options - © 2020 ExOpts Team. No Rights Reserved."
 
 void __declspec(naked) CameraNamesCodeCave()
 {
@@ -243,167 +245,6 @@ void __declspec(naked) VinylMenuCodeCave2()
 			jmp VinylMenuCodeCave2ifAbove
 	}
 
-}
-
-void __declspec(naked) IconFixCodeCave()
-{
-	_asm
-	{
-		mov eax, 0x9A962438
-		cmp ecx, 0x05
-		jmp IconFixCodeCaveExit
-	}
-}
-
-void __declspec(naked) LANRaceSelectFixCodeCave()
-{
-	_asm
-	{
-			cmp ecx, 0x04 //Tollbooth
-			je fixassprint
-			cmp ecx, 0x05 //Speedtrap
-			je fixassprint
-			cmp ecx, 0x08 //Challenge
-			je fixassprint
-			cmp ecx, 0x03 //Knockout
-			je fixascircuit
-			jmp originalcode
-
-		fixassprint :
-			mov ecx, 0x00
-			jmp originalcode
-
-		fixascircuit :
-			mov ecx, 0x01
-			jmp originalcode
-
-		originalcode :
-			mov dword ptr ds : [edx + 0x168], ecx
-			jmp LANRaceSelectFixCodeCaveExit
-
-	}
-}
-
-void __declspec(naked) LANRaceModeFixCodeCave()
-{
-	_asm
-	{
-			cmp eax, 0x00
-			je sprint
-			cmp eax, 0x01
-			je circuit
-			cmp eax, 0x02
-			je drag
-			cmp eax, 0x03
-			je knockout
-			cmp eax, 0x04
-			je tollbooth
-			cmp eax, 0x05
-			je speedtrap
-			cmp eax, 0x08
-			je challenge
-			mov ebx, 0x7818F85E // unknown
-			mov ebp, 0x9A962438 // challenge icon
-
-			jmp LANRaceModeFixCodeCaveExit
-
-		circuit :
-			mov ebx, 0x034FA2C1
-			mov ebp, 0xE9638D3E
-			jmp LANRaceModeFixCodeCaveExit
-
-		sprint :
-			mov ebx, 0xB94FD70E
-			mov ebp, 0x2521E5EB
-			jmp LANRaceModeFixCodeCaveExit
-
-		drag :
-			mov ebx, 0x6F547E4C
-			mov ebp, 0xAAAB31E9
-			jmp LANRaceModeFixCodeCaveExit
-
-		knockout :
-			mov ebx, 0x4930F5FC
-			mov ebp, 0x3A015595
-			jmp LANRaceModeFixCodeCaveExit
-
-		tollbooth :
-			mov ebx, 0xA15E4505
-			mov ebp, 0x1A091045
-			jmp LANRaceModeFixCodeCaveExit
-
-		speedtrap :
-			mov ebx, 0xEE1EDC76
-			mov ebp, 0x66C9A7B6
-			jmp LANRaceModeFixCodeCaveExit
-
-		challenge :
-			mov ebx, 0x213CC8D1
-			mov ebp, 0x9A962438
-			jmp LANRaceModeFixCodeCaveExit
-
-	}
-}
-
-void __declspec(naked) LANRaceModeFixCodeCave2()
-{
-	_asm
-	{
-
-			cmp eax, 0x00
-			je sprint
-			cmp eax, 0x01
-			je circuit
-			cmp eax, 0x02
-			je drag
-			cmp eax, 0x03
-			je knockout
-			cmp eax, 0x04
-			je tollbooth
-			cmp eax, 0x05
-			je speedtrap
-			cmp eax, 0x08
-			je challenge
-			mov ebp, 0x7818F85E // Unknown
-			mov eax, 0x9A962438 // Challenge Icon
-			jmp LANRaceModeFixCodeCave2Exit
-
-		circuit :
-			mov ebp, 0x034FA2C1
-			mov eax, 0xE9638D3E
-			jmp LANRaceModeFixCodeCave2Exit
-
-		sprint :
-			mov ebp, 0xB94FD70E
-			mov eax, 0x2521E5EB
-			jmp LANRaceModeFixCodeCave2Exit
-
-		drag :
-			mov ebp, 0x6F547E4C
-			mov eax, 0xAAAB31E9
-			jmp LANRaceModeFixCodeCave2Exit
-
-		knockout :
-			mov ebp, 0x4930F5FC
-			mov eax, 0x3A015595
-			jmp LANRaceModeFixCodeCave2Exit
-
-		tollbooth :
-			mov ebp, 0xA15E4505
-			mov eax, 0x1A091045
-			jmp LANRaceModeFixCodeCave2Exit
-
-		speedtrap :
-			mov ebp, 0xEE1EDC76
-			mov eax, 0x66C9A7B6
-			jmp LANRaceModeFixCodeCave2Exit
-
-		challenge :
-			mov ebp, 0x213CC8D1
-			mov eax, 0x9A962438
-			jmp LANRaceModeFixCodeCave2Exit
-
-	}
 }
 
 void __declspec(naked) ShowHiddenTracksCodeCave()
@@ -917,9 +758,67 @@ void __declspec(naked) MaxPerfButtonCodeCave()
 	}
 }
 
+void __declspec(naked) DDayFixCodeCaveResumeCareer()
+{
+	_asm
+	{
+		call GRaceDatabase_GetScoreInfo
+		test al,al
+		jnz StartFreeRoamOrFinalPursuit
+
+		mov eax, dword ptr ds: [0x91CF90] // FEDatabase
+		test eax,eax
+		jz StartDDay
+		mov eax, [eax + 0x10]
+		test eax, eax
+		jz StartDDay
+		movzx eax, byte ptr ds : [eax + 0xB0]
+		cmp eax, 16
+		jl StartFreeRoamOrFinalPursuit
+
+		StartDDay:
+			push 0x57F5B2
+			retn
+
+		StartFreeRoamOrFinalPursuit:
+			push 0x57F5B6
+			retn
+	}
+}
+
+void __declspec(naked) DDayFixCodeCaveCareerCribNotificationMessage()
+{
+	_asm
+	{
+		mov eax, dword ptr ds : [0x91CF90] // FEDatabase
+		test eax, eax
+		jz StartDDay
+		mov eax, [eax + 0x10]
+		test eax, eax
+		jz StartDDay
+		movzx eax, byte ptr ds: [eax + 0xB0]
+		cmp eax, 16
+		jl StartFreeRoamOrFinalPursuit
+
+		StartDDay:
+			call GRaceDatabase_GetNextDDayRace
+			push 0x531FD6
+			retn
+
+		StartFreeRoamOrFinalPursuit :
+			push 0x532015
+			retn
+	}
+}
+
 int Return0Hook()
 {
 	return 0;
+}
+
+float Return0fHook()
+{
+	return 0.0f;
 }
 
 void Init()
@@ -961,7 +860,7 @@ void Init()
 	ShowTollbooth = iniReader.ReadInteger("Menu", "ShowTollbooth", 1) == 1;
 	ShowChallenge = iniReader.ReadInteger("Menu", "ShowChallenge", 0) == 1;
 	ShowMoreRaceOptions = iniReader.ReadInteger("Menu", "ShowMoreRaceOptions", 1) == 1;
-	ShowMoreCustomizationOptions = iniReader.ReadInteger("Menu", "ShowMoreCustomizationOptions", 1) == 1;
+	ShowMoreCustomizationOptions = iniReader.ReadInteger("Menu", "ShowMoreCustomizationOptions", 0) == 1;
 	HideOnline = iniReader.ReadInteger("Menu", "ShowOnline", 1) == 0;
 	ShowOnlineOpts = iniReader.ReadInteger("Menu", "ShowOnlineOpts", 0) == 1;
 	ShowSubs = iniReader.ReadInteger("Menu", "ShowSubs", 0) == 1;
@@ -977,9 +876,11 @@ void Init()
 	csBlacklist = iniReader.ReadInteger("Menu", "ChallengeSeriesBlacklist", 19);
 	randomizeCount = iniReader.ReadInteger("Menu", "RandomizeCount", 30);
 	SplashScreenTimeLimit = iniReader.ReadFloat("Menu", "SplashScreenTimeLimit", 30.0f);
+	CarSelectTireSteerAngle = iniReader.ReadFloat("Menu", "CarSelectTireSteerAngle", 21.6723f);
 	GarageZoom = iniReader.ReadInteger("Menu", "ShowcaseCamInfiniteZoom", 0) == 1;
 	GarageRotate = iniReader.ReadInteger("Menu", "ShowcaseCamInfiniteRotation", 0) == 1;
 	GarageShowcase = iniReader.ReadInteger("Menu", "ShowcaseCamAlwaysEnable", 0) == 1;
+	AllowLongerProfileNames = iniReader.ReadInteger("Menu", "AllowLongerProfileNames", 1) == 1;
 	ExOptsTeamTakeOver = iniReader.ReadInteger("Menu", "DisableTakeover", 0) == 0;
 
 	// Gameplay
@@ -1000,8 +901,10 @@ void Init()
 	eatSomeBurgers = iniReader.ReadInteger("Gameplay", "UnlockBurgerKingChallenge", 0) == 1;
 	EnableMaxPerfOnShop = iniReader.ReadInteger("Gameplay", "EnableMaxPerformanceOnShop", 1) == 1;
 	ShowAllCarsInFE = iniReader.ReadInteger("Gameplay", "ShowAllCarsInFE", 1);
+	// ShowPresetCarsInFE = iniReader.ReadInteger("Gameplay", "ShowPresetCarsInFE", 0);
 	NoCatchUp = iniReader.ReadInteger("Gameplay", "NoCatchUp", 0) == 1;
 	NoRevLimiter = iniReader.ReadInteger("Gameplay", "NoRevLimiter", 0) == 1;
+	NosTrailRepeatCount = iniReader.ReadInteger("Gameplay", "NosTrailRepeatCount", 8);
 	SelectableMarkerCount = iniReader.ReadInteger("Gameplay", "SelectableMarkerCount", 2);
 	PurchasedCarLimit = iniReader.ReadInteger("Gameplay", "PurchasedCarLimit", 10);
 	SBRechargeTime = iniReader.ReadFloat("Gameplay", "SBRechargeTime", 25.0f);
@@ -1048,6 +951,7 @@ void Init()
 	//TimeBugFix = iniReader.ReadInteger("Fixes", "TimeBugFix", 0) == 1;
 	CarSkinFix = iniReader.ReadInteger("Fixes", "CarSkinFix", 0) == 1;
 	ImmobileColFix = iniReader.ReadInteger("Fixes", "ImmobileCollisionsFix", 0) == 1;
+	DDayFix = iniReader.ReadInteger("Fixes", "DDayFix", 1) == 1;
 
 	// Misc
 	WindowedMode = iniReader.ReadInteger("Misc", "WindowedMode", 0);
@@ -1203,6 +1107,12 @@ void Init()
 	// Randomize Count
 	injector::WriteMemory<int>(0x7b4648, randomizeCount, true);
 
+	// Menu Front Tire Angle
+	injector::WriteMemory<float>(0x905E20, CarSelectTireSteerAngle, true);
+
+	// NOS Trail Repeat Count NosTrailRepeatCount
+	injector::WriteMemory<int>(0x903694, NosTrailRepeatCount, true);
+
 	// Unfreeze Lap Count for Lap Knockout
 	if (unfreezeKO)
 	{
@@ -1239,21 +1149,6 @@ void Init()
 	injector::WriteMemory<DWORD>(0x7AAB1A, 0x213CC8D1, true); // Challenge name hash
 	injector::WriteMemory<DWORD>(0x7AAB1F, 0x9A962438, true); // Challenge icon hash
 	injector::WriteMemory<unsigned char>(0x7AAB33, 0x08, true); // Challenge game mode
-
-	// List all race types on LAN
-	injector::MakeNOP(0x7AAB69, 6, true);
-
-	// Fix Crash
-	injector::MakeRangedNOP(0x7AA8E7, LANRaceSelectFixCodeCaveExit, true);
-	injector::MakeJMP(0x7AA8E7, LANRaceSelectFixCodeCave, true);
-
-	// Fix Icons and Strings - 1
-	injector::MakeRangedNOP(0x539562, LANRaceModeFixCodeCaveExit, true);
-	injector::MakeJMP(0x539562, LANRaceModeFixCodeCave, true);
-
-	// Fix Icons and Strings - 2
-	injector::MakeRangedNOP(0x535E8A, LANRaceModeFixCodeCave2Exit, true);
-	injector::MakeJMP(0x535E8A, LANRaceModeFixCodeCave2, true);
 
 	if (!ShowTollbooth) // Remove Tollbooth if the option is 0
 		injector::MakeJMP(0x7AAA11, 0x7AAA5D, true);
@@ -1477,9 +1372,6 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x926124, 0x01, true);
 	}
 
-	// Fix Challenge icon for race selection screen
-	injector::MakeJMP(0x56e094, IconFixCodeCave, true);
-
 	if (WheelFix) // Fix Invisible Wheels
 		injector::WriteMemory<unsigned char>(0x74251D, 0x01, true);
 
@@ -1599,6 +1491,10 @@ void Init()
 		// SetHeatLevel
 		injector::WriteMemory<float*>(0x435079, &MaxHeatLevel, true); // AIVehicleHuman::~AIVehicleHuman
 		injector::WriteMemory<float>(0x435088, MaxHeatLevel, true);
+
+		// Safehouse car select icon stuff (HEAT_X%.0f)
+		injector::WriteMemory<float*>(0x7A5B03, &MaxHeatLevel, true);
+		injector::WriteMemory<float*>(0x7A5B12, &MaxHeatLevel, true);
 	}
 
 	// Visual Treatment Override
@@ -1664,6 +1560,19 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x926127, 0x01, true);
 		injector::WriteMemory<unsigned char>(0x581663, ShowAllCarsInFE, true); // Add them to desired category
 	}
+
+	// Preset Mode (Only for experts)
+	/*if (ShowPresetCarsInFE)
+	{
+		injector::WriteMemory<unsigned char>(0x926129, 0x01, true);
+
+		// Disable bonus cars creation to save tuning slots
+		injector::MakeRangedNOP(0x590E5E, 0x590E68, true);
+		injector::WriteMemory<unsigned char>(0x590E68, 0xEB, true);
+
+		// Only use Stock, My Cars and Preset categories in Car Select.
+		injector::MakeRangedNOP(0x7BF9B4, 0x7BF9B6, true);
+	}*/
 
 	// More Opponent Cars
 	if (MoreCarsForOpponents)
@@ -1739,24 +1648,18 @@ void Init()
 		injector::WriteMemory<float>(0x50FA03, 0.05f, true); // Min Value
 	}
 
-	// No Catch Up - Experimental
+	// No Catch Up
 	if (NoCatchUp)
 	{
-		// GRaceParameters::GetCatchUp
-		injector::MakeCALL(0x408E76, Return0Hook, true); // AIPerpVehicle::ComputeSkill
-		injector::MakeCALL(0x5FFA68, Return0Hook, true); // GRaceStatus::ComputeCatchUpSkill
+		// AIPerpVehicle::GetCatchupCheat
+		injector::WriteMemory(0x892240, &Return0fHook, true); // AIPerpVehicle::ICheater::`vtbl'
+		injector::WriteMemory(0x8925C8, &Return0fHook, true); // AIVehicleRacecar::ICheater::`vtbl'
 
-		//injector::WriteMemory<short>(0x5D991C, 0xC031, true); // ??
-
-		// cFrontendDatabase::FillCustomRace
-		injector::MakeRangedNOP(0x56DD38, 0x56DD3B, true); // nop mov al, [edi+0Bh]
-		injector::WriteMemory<short>(0x56DD38, 0xC033, true); // xor eax, eax - push 0 for GRaceCustom::SetCatchUp
-		
 		// Make Catch Up Controller always 0
 		injector::MakeRangedNOP(0x7AC203, 0x7AC206, true); // nop setz bl
 		injector::WriteMemory<short>(0x7AC203, 0xDB30, true); // xor bl, bl
 		injector::WriteMemory<unsigned char>(0x7AC245, 0xEB, true);
-
+		
 		// Freeze it in menu
 		injector::WriteMemory<unsigned char>(0x7ACA68, 0, true); // Circuit
 		injector::WriteMemory<unsigned char>(0x7ACC4B, 0, true); // Sprint
@@ -1795,6 +1698,15 @@ void Init()
 	injector::WriteMemory<float>(0x8A380C, ExcessiveSpeedingLimit, true);
 	injector::WriteMemory<float>(0x8A3814, RecklessDrivingLimit, true);
 
+	// Allow Longer Save Game Names
+	if (AllowLongerProfileNames)
+	{
+		injector::WriteMemory<unsigned char>(0x527570, 15, true); // UIProfileMenu::ShowKeyboard - Input Limit on Save Game Creation
+		injector::WriteMemory<unsigned char>(0x52758E, 0, true); // UIProfileMenu::ShowKeyboard - Allow every character
+		injector::WriteMemory<unsigned char>(0x563A7A, 16, true); // UIMemcardList::NotificationMessage - Include Longer Names in the Load Save list
+		injector::WriteMemory<unsigned char>(0x563A7E, '/', true); // UIMemcardList::NotificationMessage - Ignore saves with this character
+	}
+
 	// Car Skin Fix
 	if (CarSkinFix)
 	{
@@ -1814,576 +1726,463 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x69828F, 0, true); // RigidBody::IsImmobile
 	}
 
+	// DDay fix for save games with progress
+	if (DDayFix)
+	{
+		injector::MakeJMP(0x57F5A9, DDayFixCodeCaveResumeCareer, true);
+		injector::MakeJMP(0x531FCA, DDayFixCodeCaveCareerCribNotificationMessage, true);
+	}
+
+
 	// Other Things
-	CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&Thing, NULL, 0, NULL);
+	//CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&Thing, NULL, 0, NULL);
+	injector::MakeCALL(0x663EE8, Thing, true); // Hook the hotkey detection to the main loop
 }
 
-DWORD WINAPI Thing(LPVOID)
+void Thing()
 {
-	while (true)
+	//Sleep(ThreadDelay);
+	_asm pushad;
+
+	raceOptions = *(DWORD*)0x91CF90; // Race Options Pointer (Thanks to samfednik)
+	GameState = *(DWORD*)0x0925E90; // 3 = FE, 4&5 = Loading screen, 6 = Gameplay
+	windowHandle = *(HWND*)0x982BF4;
+	IsOnFocus = !(*(bool*)0x982C50);
+
+	// Windowed Mode Related Fixes
+	if (WindowedMode == 2 && windowHandle && !once2)
 	{
-		Sleep(ThreadDelay);
+		RECT o_cRect, n_cRect, n_wRect;
+		GetClientRect(windowHandle, &o_cRect);
 
-		raceOptions = *(DWORD*)0x91CF90; // Race Options Pointer (Thanks to samfednik)
-		GameState = *(DWORD*)0x0925E90; // 3 = FE, 4&5 = Loading screen, 6 = Gameplay
-		windowHandle = *(HWND*)0x982BF4;
-		IsOnFocus = !(*(bool*)0x982C50);
+		DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE) | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW;
+		SetWindowLongPtr(windowHandle, GWL_STYLE, wStyle);
 
-		// Windowed Mode Related Fixes
-		if (WindowedMode == 2 && windowHandle && !once2)
+		// make window change style
+		SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
+
+		GetWindowRect(windowHandle, &n_wRect);
+		GetClientRect(windowHandle, &n_cRect);
+		int n_wWidth = n_wRect.right - n_wRect.left;
+		int n_wHeight = n_wRect.bottom - n_wRect.top;
+		int dif_wWidth = o_cRect.right - n_cRect.right;
+		int dif_wHeight = o_cRect.bottom - n_cRect.bottom;
+		int newWidth = n_wWidth + dif_wWidth;
+		int newHeight = n_wHeight + dif_wHeight;
+
+		SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+
+		once2 = 1;
+	}
+
+	// Ultimate Force Heat Level
+	if ((GetAsyncKeyState(hotkeyToggleForceHeat) & 1) && (GameState == 6) && IsOnFocus) //When pressed "Toggle Force Heat"
+	{
+		forceHeatLevel = !forceHeatLevel; // Toggle option
+		if (forceHeatLevel)
 		{
-			RECT o_cRect, n_cRect, n_wRect;
-			GetClientRect(windowHandle, &o_cRect);
+			EnableHeatLevelOverride = 1;
+			heatLevel = MinHeatLevel - 1;
 
-			DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE) | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW;
-			SetWindowLongPtr(windowHandle, GWL_STYLE, wStyle);
-
-			// make window change style
-			SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
-
-			GetWindowRect(windowHandle, &n_wRect);
-			GetClientRect(windowHandle, &n_cRect);
-			int n_wWidth = n_wRect.right - n_wRect.left;
-			int n_wHeight = n_wRect.bottom - n_wRect.top;
-			int dif_wWidth = o_cRect.right - n_cRect.right;
-			int dif_wHeight = o_cRect.bottom - n_cRect.bottom;
-			int newWidth = n_wWidth + dif_wWidth;
-			int newHeight = n_wHeight + dif_wHeight;
-
-			SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
-
-			once2 = 1;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled Ultimate Force Heat Level hack.^You can now press ChangeHeatLevel (PageUp as default) key to increase your heat level.");
+			}
 		}
-
-		// Ultimate Force Heat Level
-		if ((GetAsyncKeyState(hotkeyToggleForceHeat) & 1) && (GameState == 6) && IsOnFocus) //When pressed "Toggle Force Heat"
+		else
 		{
-			forceHeatLevel = !forceHeatLevel; // Toggle option
-			if (forceHeatLevel)
-			{
-				EnableHeatLevelOverride = 1;
-				heatLevel = MinHeatLevel - 1;
-
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled Ultimate Force Heat Level hack.^You can now press ChangeHeatLevel (PageUp as default) key to increase your heat level.");
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-			}
-			else
-			{
-				// Re-read the override boolean from config file
-				CIniReader iniReader("NFSMWExtraOptionsSettings.ini");
-				EnableHeatLevelOverride = iniReader.ReadInteger("Pursuit", "HeatLevelOverride", 0) == 1;
-
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled Ultimate Force Heat Level hack.");
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-			}
-
-			if (EnableHeatLevelOverride)
-			{
-				// CustomizeMeter::Init
-				injector::WriteMemory<float>(0x7bb502, MaxHeatLevel, true); // CustomizeCategoryScreen
-				injector::WriteMemory<float>(0x7b1387, MaxHeatLevel, true); // CustomizationScreenHelper
-				injector::WriteMemory<float>(0x7b0c89, MaxHeatLevel, true); // CustomizeShoppingCart::Setup
-				injector::WriteMemory<float>(0x7B4D7C, MaxHeatLevel, true); // UIQRCarSelect::InitStatsSliders
-
-				// SetHeatLevel
-				injector::WriteMemory<float*>(0x435079, &MaxHeatLevel, true); // AIVehicleHuman::~AIVehicleHuman
-				injector::WriteMemory<float>(0x435088, MaxHeatLevel, true);
-			}
-			else
-			{
-				// CustomizeMeter::Init
-				injector::WriteMemory<float>(0x7bb502, 5.0f, true); // CustomizeCategoryScreen
-				injector::WriteMemory<float>(0x7b1387, 5.0f, true); // CustomizationScreenHelper
-				injector::WriteMemory<float>(0x7b0c89, 5.0f, true); // CustomizeShoppingCart::Setup
-				injector::WriteMemory<float>(0x7B4D7C, 5.0f, true); // UIQRCarSelect::InitStatsSliders
-
-				// SetHeatLevel
-				injector::WriteMemory<DWORD>(0x435079, 0x890DA4, true); // AIVehicleHuman::~AIVehicleHuman
-				injector::WriteMemory<float>(0x435088, 5.0f, true);
-			}
-
-			while ((GetAsyncKeyState(hotkeyToggleForceHeat) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		if ((GetAsyncKeyState(hotkeyForceHeatLevel) & 1) && forceHeatLevel && (GameState == 6) && IsOnFocus) //When pressed "Forced Heat Level"
-		{
-			heatLevel = (int)(floorf(heatLevel) - floorf(MinHeatLevel) + 1) % (int)(floorf(MaxHeatLevel) - floorf(MinHeatLevel) + 1) + MinHeatLevel;
-			
-			Game_SetWorldHeat(heatLevel); // Use direct function call to set the heat level
-
-			while ((GetAsyncKeyState(hotkeyForceHeatLevel) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		if ((GetAsyncKeyState(hotkeyToggleCops) & 1) && forceHeatLevel && (GameState == 6) && IsOnFocus) // Toggle Cops
-		{
-			ToggleCops = !ToggleCops;
-			Game_SetCopsEnabled(ToggleCops);
-
-			if (ToggleCops)
-			{
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Cops are now enabled.");
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-			}
-			else
-			{
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Cops are now disabled.");
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-			}
-
-			while ((GetAsyncKeyState(hotkeyToggleCops) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		// Cop Lights
-		if ((GetAsyncKeyState(hotkeyToggleCopLights) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Toggle Police Lights" key
-		{
-			copLightsEnabled = !copLightsEnabled;
-			
-			DWORD* PlayerPVehicle = *(DWORD**)0x0092CD28;
-
-			if (PlayerPVehicle)
-			{
-				if (copLightsEnabled) // Enable cop lights - more proper method
-				{
-					if (!PVehicle_IsGlareOn(PlayerPVehicle, 0x7000)) PVehicle_GlareOn(PlayerPVehicle, 0x7000);
-				}
-				else // Disable cop lights
-				{
-					if (PVehicle_IsGlareOn(PlayerPVehicle, 0x7000)) PVehicle_GlareOff(PlayerPVehicle, 0x7000);
-				}
-			}
-
-			while ((GetAsyncKeyState(hotkeyToggleCopLights) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		// Headlights
-		if ((GetAsyncKeyState(hotkeyToggleHeadlights) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Toggle Head Lights" key
-		{
-			headlightsMode = !headlightsMode;
-
-			DWORD* PlayerPVehicle = *(DWORD**)0x0092CD28;
-
-			if (PlayerPVehicle)
-			{
-				if (headlightsMode) // Enable headlights - more proper method
-				{
-					if (!PVehicle_IsGlareOn(PlayerPVehicle, 7))
-					{
-						injector::WriteMemory<unsigned char>(0x6703D6, 7, true);
-						PVehicle_GlareOn(PlayerPVehicle, 7);
-						
-					}
-				}
-				else // Disable headlights
-				{
-					if (PVehicle_IsGlareOn(PlayerPVehicle, 7))
-					{
-						injector::WriteMemory<unsigned char>(0x6703D6, 0, true);
-						PVehicle_GlareOff(PlayerPVehicle, 7);
-					}
-				}
-			}
-
-			while ((GetAsyncKeyState(hotkeyToggleHeadlights) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-
-		// Car Hack
-		if ((GetAsyncKeyState(hotkeyCarHack) & 1) && IsOnFocus) // When pressed "Toggle Freeze Car" key
-		{
-			carHackEnabled = !carHackEnabled;
-
-			if (carHackEnabled)
-			{
-				raceType = *(unsigned char*)(raceOptions + 0x18); // Get the race type
-				raceMode = *(unsigned char*)(raceOptions + 0x12C); // Get the mode. (1 = Career, 4 = Quick Race, 32 = My Cars)
-				careerCar = *(DWORD*)(*(DWORD*)(raceOptions + 0x10) + 0xA8);
-
-				switch (raceMode)
-				{
-				case 1: selectedCar = *(DWORD*)(*(DWORD*)(raceOptions + 0x10) + 0xA8); break; //Freeze career car
-				case 4: selectedCar = *(DWORD*)(raceOptions + 0x2C + (raceType * 0x18)); break; // Freeze QR Car
-				case 32: selectedCar = *(DWORD*)(raceOptions + 0x2C); break; //Freeze my car
-				default: carHackEnabled = 0; break; // Don't enable it while not in a car select screen
-				}
-
-				if (carHackEnabled && ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled Freeze Car Hack.^You can now use this car anywhere.");
-
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-
-			}
-			else
-			{
-				// Fix Challenge Series behaviour
-				injector::WriteMemory<unsigned char>(0x6f48e7, 0x74, true);
-
-				// Fix Career Car
-				unsigned int CareerCarPointer = *(DWORD*)(raceOptions + 0x10) + 0xA8;
-				*(unsigned int*)CareerCarPointer = careerCar;
-
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled Freeze Car Hack.^You can now select cars normally.");
-
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-			}
-
-
-			while ((GetAsyncKeyState(hotkeyCarHack) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		if (carHackEnabled)
-		{
-			unsigned int PointerToWrite;
-			// Freeze values
-			PointerToWrite = raceOptions + 0x2C;  // Sprint (0)
-			*(unsigned int*)PointerToWrite = selectedCar;
-			
-			PointerToWrite = raceOptions + 0x2C + (0x18); // Circuit (1)
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			PointerToWrite = raceOptions + 0x2C + (2 * 0x18); // Drag (2)
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			PointerToWrite = raceOptions + 0x2C + (3 * 0x18); // Lap Knockout (3)
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			PointerToWrite = raceOptions + 0x2C + (4 * 0x18); // Tollbooth (4)
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			PointerToWrite = raceOptions + 0x2C + (5 * 0x18); // Speedtrap (5)
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			PointerToWrite = raceOptions + 0x2C + (8 * 0x18); // Challenge (8)
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			PointerToWrite = *(DWORD*)(raceOptions + 0x10) + 0xA8; // Career
-			*(unsigned int*)PointerToWrite = selectedCar;
-
-			injector::WriteMemory<unsigned char>(0x6f48e7, 0xEB, true); // Use selected cars at Challenge Series
-		}
-
-		// Drunk Driver
-		if ((GetAsyncKeyState(hotkeyAutoDrive) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Drunk Driver" key
-		{
-			AutoDrive = !AutoDrive;
-
-			if (AutoDrive)
-			{
-				Game_ForceAIControl(1);
-			}
-			else
-			{
-				Game_ClearAIControl(1);
-			}
-
-			while ((GetAsyncKeyState(hotkeyAutoDrive) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		// Freeze Camera
-		if ((GetAsyncKeyState(hotkeyFreezeCamera) & 1) && (GameState == 6) && IsOnFocus)
-		{
-			*(bool*)0x911020 = !(*(bool*)0x911020);
-
-			while ((GetAsyncKeyState(hotkeyFreezeCamera) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-
-		// Unlock All Things
-		if ((GetAsyncKeyState(hotkeyUnlockAllThings) & 1) && IsOnFocus) // When pressed "Unlock All Things" key
-		{
-			UnlockAllThings = !UnlockAllThings;
+			// Re-read the override boolean from config file
 			CIniReader iniReader("NFSMWExtraOptionsSettings.ini");
-			iniReader.WriteInteger("Gameplay", "UnlockAllThings", UnlockAllThings);
+			EnableHeatLevelOverride = iniReader.ReadInteger("Pursuit", "HeatLevelOverride", 0) == 1;
 
-			if (UnlockAllThings)
+			if (ShowMessage)
 			{
-				*(unsigned char*)0x926124 = 1;
-
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled UnlockAllThings hack.^Everything is now unlocked. Enjoy!");
-
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-
-			}
-			else
-			{
-				*(unsigned char*)0x926124 = 0;
-
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled UnlockAllThings hack.^Unlock status of everything is returned back to normal.");
-
-					if (GameState == 6)
-					{
-						while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-						ButtonResult = 0;
-						UnPause(NULL);
-					}
-				}
-			}
-
-			while ((GetAsyncKeyState(hotkeyUnlockAllThings) & 0x8000) > 0) { Sleep(ThreadDelay); }
-		}
-		
-		// .hot Save And Load
-		if (EnableSaveLoadHotPos && (GameState == 6) && IsOnFocus)
-		{
-			// Save
-			if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(49) & 0x8000)
-			{
-				*(unsigned int*)0x9B0908 = 1;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 1);
-
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(50) & 0x8000)
-			{
-				*(unsigned int*)0x9B0908 = 2;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 2);
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(51) & 0x8000)
-			{
-				*(unsigned int*)0x9B0908 = 3;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 3);
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(52) & 0x8000)
-			{
-				*(unsigned int*)0x9B0908 = 4;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 4);
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(53) & 0x8000)
-			{
-				*(unsigned int*)0x9B0908 = 5;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 5);
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			// Load
-			if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(49) & 0x8000)
-			{
-				*(unsigned int*)0x009B090C = 1;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 1);
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(50) & 0x8000)
-			{
-				*(unsigned int*)0x009B090C = 2;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 2);
-
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(51) & 0x8000)
-			{
-				*(unsigned int*)0x009B090C = 3;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 3);
-
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(52) & 0x8000)
-			{
-				*(unsigned int*)0x009B090C = 4;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 4);
-
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
-			}
-
-			if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(53) & 0x8000)
-			{
-				*(unsigned int*)0x009B090C = 5;
-				if (ShowMessage)
-				{
-					DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 5);
-
-					while (ButtonResult != DialogBoxReturn) Sleep(ThreadDelay);
-					ButtonResult = 0;
-					UnPause(NULL);
-				}
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled Ultimate Force Heat Level hack.");
 			}
 		}
 
-		// Time Bug Fix (thx to GrimMaple), removed for now, breaks NISs
-		/*if (TimeBugFix)
+		if (EnableHeatLevelOverride)
 		{
-			float tmpTime = injector::ReadMemory<float>(TimerAddress);
+			// CustomizeMeter::Init
+			injector::WriteMemory<float>(0x7bb502, MaxHeatLevel, true); // CustomizeCategoryScreen
+			injector::WriteMemory<float>(0x7b1387, MaxHeatLevel, true); // CustomizationScreenHelper
+			injector::WriteMemory<float>(0x7b0c89, MaxHeatLevel, true); // CustomizeShoppingCart::Setup
+			injector::WriteMemory<float>(0x7B4D7C, MaxHeatLevel, true); // UIQRCarSelect::InitStatsSliders
 
-			if (tmpTime < PreviousRaceTime)
-			{
-				injector::WriteMemory<float>(GlobalTimerAddress, 0.0f);
-			}
-
-			PreviousRaceTime = tmpTime;
-		}*/
-
-		// Debug Camera
-		if (EnableDebugWorldCamera && (GameState == 6) && IsOnFocus)
+			// SetHeatLevel
+			injector::WriteMemory<float*>(0x435079, &MaxHeatLevel, true); // AIVehicleHuman::~AIVehicleHuman
+			injector::WriteMemory<float>(0x435088, MaxHeatLevel, true);
+		}
+		else
 		{
-			if ((GetAsyncKeyState(VK_BACK) & 1)) // Backspace : Toggle Debug World Camera
+			// CustomizeMeter::Init
+			injector::WriteMemory<float>(0x7bb502, 5.0f, true); // CustomizeCategoryScreen
+			injector::WriteMemory<float>(0x7b1387, 5.0f, true); // CustomizationScreenHelper
+			injector::WriteMemory<float>(0x7b0c89, 5.0f, true); // CustomizeShoppingCart::Setup
+			injector::WriteMemory<float>(0x7B4D7C, 5.0f, true); // UIQRCarSelect::InitStatsSliders
+
+			// SetHeatLevel
+			injector::WriteMemory<DWORD>(0x435079, 0x890DA4, true); // AIVehicleHuman::~AIVehicleHuman
+			injector::WriteMemory<float>(0x435088, 5.0f, true);
+		}
+	}
+
+	if ((GetAsyncKeyState(hotkeyForceHeatLevel) & 1) && forceHeatLevel && (GameState == 6) && IsOnFocus) //When pressed "Forced Heat Level"
+	{
+		heatLevel = (int)(floorf(heatLevel) - floorf(MinHeatLevel) + 1) % (int)(floorf(MaxHeatLevel) - floorf(MinHeatLevel) + 1) + MinHeatLevel;
+			
+		Game_SetWorldHeat(heatLevel); // Use direct function call to set the heat level
+	}
+
+	if ((GetAsyncKeyState(hotkeyToggleCops) & 1) && forceHeatLevel && (GameState == 6) && IsOnFocus) // Toggle Cops
+	{
+		ToggleCops = !ToggleCops;
+		Game_SetCopsEnabled(ToggleCops);
+
+		if (ToggleCops)
+		{
+			if (ShowMessage)
 			{
-				DebugWorldCamera = !DebugWorldCamera;
-
-				if (*(int*)0x00925E90 == 6 && DebugWorldCamera)
-				{
-					injector::WriteMemory<unsigned char>(0x750F4C, 0xEB, true); // fix crash??
-					*(unsigned int*)0x0091102C = 0;
-					CameraAI_SetAction(1, "CDActionDebug");
-				}
-
-				if (*(int*)0x00925E90 == 6 && !DebugWorldCamera)
-				{
-					CameraAI_SetAction(1, "CDActionDrive");
-					*(unsigned char*)0x911038 = 0;
-					injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
-				}
-
-				while ((GetAsyncKeyState(VK_BACK) & 0x8000) > 0) { Sleep(ThreadDelay); }
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Cops are now enabled.");
 			}
-
-			if ((GetAsyncKeyState(VK_NEXT) & 1)) // Page Down : Toggle Debug Watch Car Camera
+		}
+		else
+		{
+			if (ShowMessage)
 			{
-				DebugWatchCarCamera = !DebugWatchCarCamera;
-				*(unsigned char*)0x00911058 = 1;
-
-				if (*(int*)0x00925E90 == 6 && DebugWatchCarCamera)
-				{
-					injector::WriteMemory<unsigned char>(0x750F4C, 0xEB, true); // fix crash??
-					*(unsigned char*)0x911038 = 1;
-					CameraAI_SetAction(1, "CDActionDebugWatchCar");
-				}
-
-				if (*(int*)0x00925E90 == 6 && !DebugWatchCarCamera)
-				{
-					CameraAI_SetAction(1, "CDActionDrive");
-					*(unsigned char*)0x911038 = 0;
-					injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
-				}
-
-				while ((GetAsyncKeyState(VK_NEXT) & 0x8000) > 0) { Sleep(ThreadDelay); }
-			}
-
-			if ((GetAsyncKeyState(VK_ADD) & 1) && DebugWatchCarCamera) // + : Next car
-			{
-				*(unsigned char*)0x00911058 += 1;
-
-				while ((GetAsyncKeyState(VK_ADD) & 0x8000) > 0) { Sleep(ThreadDelay); }
-			}
-
-			if ((GetAsyncKeyState(VK_SUBTRACT) & 1) && DebugWatchCarCamera) // - : Previous car
-			{
-				*(unsigned char*)0x00911058 -= 1;
-
-				while ((GetAsyncKeyState(VK_SUBTRACT) & 0x8000) > 0) { Sleep(ThreadDelay); }
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Cops are now disabled.");
 			}
 		}
 	}
 
-	return 0;
+	// Cop Lights
+	if ((GetAsyncKeyState(hotkeyToggleCopLights) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Toggle Police Lights" key
+	{
+		copLightsEnabled = !copLightsEnabled;
+			
+		DWORD* PlayerPVehicle = *(DWORD**)0x0092CD28;
+
+		if (PlayerPVehicle)
+		{
+			if (copLightsEnabled) // Enable cop lights - more proper method
+			{
+				if (!PVehicle_IsGlareOn(PlayerPVehicle, 0x7000)) PVehicle_GlareOn(PlayerPVehicle, 0x7000);
+			}
+			else // Disable cop lights
+			{
+				if (PVehicle_IsGlareOn(PlayerPVehicle, 0x7000)) PVehicle_GlareOff(PlayerPVehicle, 0x7000);
+			}
+		}
+	}
+
+	// Headlights
+	if ((GetAsyncKeyState(hotkeyToggleHeadlights) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Toggle Head Lights" key
+	{
+		headlightsMode = !headlightsMode;
+
+		DWORD* PlayerPVehicle = *(DWORD**)0x0092CD28;
+
+		if (PlayerPVehicle)
+		{
+			if (headlightsMode) // Enable headlights - more proper method
+			{
+				if (!PVehicle_IsGlareOn(PlayerPVehicle, 7))
+				{
+					injector::WriteMemory<unsigned char>(0x6703D6, 7, true);
+					PVehicle_GlareOn(PlayerPVehicle, 7);
+						
+				}
+			}
+			else // Disable headlights
+			{
+				if (PVehicle_IsGlareOn(PlayerPVehicle, 7))
+				{
+					injector::WriteMemory<unsigned char>(0x6703D6, 0, true);
+					PVehicle_GlareOff(PlayerPVehicle, 7);
+				}
+			}
+		}
+	}
+
+
+	// Car Hack
+	if ((GetAsyncKeyState(hotkeyCarHack) & 1) && IsOnFocus) // When pressed "Toggle Freeze Car" key
+	{
+		carHackEnabled = !carHackEnabled;
+
+		if (carHackEnabled)
+		{
+			raceType = *(unsigned char*)(raceOptions + 0x18); // Get the race type
+			raceMode = *(unsigned char*)(raceOptions + 0x12C); // Get the mode. (1 = Career, 4 = Quick Race, 32 = My Cars)
+			careerCar = *(DWORD*)(*(DWORD*)(raceOptions + 0x10) + 0xA8);
+
+			switch (raceMode)
+			{
+			case 1: selectedCar = *(DWORD*)(*(DWORD*)(raceOptions + 0x10) + 0xA8); break; //Freeze career car
+			case 4: selectedCar = *(DWORD*)(raceOptions + 0x2C + (raceType * 0x18)); break; // Freeze QR Car
+			case 32: selectedCar = *(DWORD*)(raceOptions + 0x2C); break; //Freeze my car
+			default: carHackEnabled = 0; break; // Don't enable it while not in a car select screen
+			}
+
+			if (carHackEnabled && ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled Freeze Car Hack.^You can now use this car anywhere.");
+			}
+
+		}
+		else
+		{
+			// Fix Challenge Series behaviour
+			injector::WriteMemory<unsigned char>(0x6f48e7, 0x74, true);
+
+			// Fix Career Car
+			unsigned int CareerCarPointer = *(DWORD*)(raceOptions + 0x10) + 0xA8;
+			*(unsigned int*)CareerCarPointer = careerCar;
+
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled Freeze Car Hack.^You can now select cars normally.");
+			}
+		}
+	}
+
+	if (carHackEnabled)
+	{
+		unsigned int PointerToWrite;
+		// Freeze values
+		PointerToWrite = raceOptions + 0x2C;  // Sprint (0)
+		*(unsigned int*)PointerToWrite = selectedCar;
+			
+		PointerToWrite = raceOptions + 0x2C + (0x18); // Circuit (1)
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		PointerToWrite = raceOptions + 0x2C + (2 * 0x18); // Drag (2)
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		PointerToWrite = raceOptions + 0x2C + (3 * 0x18); // Lap Knockout (3)
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		PointerToWrite = raceOptions + 0x2C + (4 * 0x18); // Tollbooth (4)
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		PointerToWrite = raceOptions + 0x2C + (5 * 0x18); // Speedtrap (5)
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		PointerToWrite = raceOptions + 0x2C + (8 * 0x18); // Challenge (8)
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		PointerToWrite = *(DWORD*)(raceOptions + 0x10) + 0xA8; // Career
+		*(unsigned int*)PointerToWrite = selectedCar;
+
+		injector::WriteMemory<unsigned char>(0x6f48e7, 0xEB, true); // Use selected cars at Challenge Series
+	}
+
+	// Drunk Driver
+	if ((GetAsyncKeyState(hotkeyAutoDrive) & 1) && (GameState == 6) && IsOnFocus) // When pressed "Drunk Driver" key
+	{
+		AutoDrive = !AutoDrive;
+
+		if (AutoDrive)
+		{
+			Game_ForceAIControl(1);
+		}
+		else
+		{
+			Game_ClearAIControl(1);
+		}
+	}
+
+	// Freeze Camera
+	if ((GetAsyncKeyState(hotkeyFreezeCamera) & 1) && (GameState == 6) && IsOnFocus)
+	{
+		*(bool*)0x911020 = !(*(bool*)0x911020);
+	}
+
+	// Unlock All Things
+	if ((GetAsyncKeyState(hotkeyUnlockAllThings) & 1) && IsOnFocus) // When pressed "Unlock All Things" key
+	{
+		UnlockAllThings = !UnlockAllThings;
+		CIniReader iniReader("NFSMWExtraOptionsSettings.ini");
+		iniReader.WriteInteger("Gameplay", "UnlockAllThings", UnlockAllThings);
+
+		if (UnlockAllThings)
+		{
+			*(unsigned char*)0x926124 = 1;
+
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have enabled UnlockAllThings hack.^Everything is now unlocked. Enjoy!");
+			}
+
+		}
+		else
+		{
+			*(unsigned char*)0x926124 = 0;
+
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "You have disabled UnlockAllThings hack.^Unlock status of everything is returned back to normal.");
+			}
+		}
+	}
+		
+	// .hot Save And Load
+	if (EnableSaveLoadHotPos && (GameState == 6) && IsOnFocus)
+	{
+		// Save
+		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(49) & 0x8000)
+		{
+			*(unsigned int*)0x9B0908 = 1;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 1);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(50) & 0x8000)
+		{
+			*(unsigned int*)0x9B0908 = 2;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 2);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(51) & 0x8000)
+		{
+			*(unsigned int*)0x9B0908 = 3;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 3);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(52) & 0x8000)
+		{
+			*(unsigned int*)0x9B0908 = 4;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 4);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(53) & 0x8000)
+		{
+			*(unsigned int*)0x9B0908 = 5;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 5);
+			}
+		}
+
+		// Load
+		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(49) & 0x8000)
+		{
+			*(unsigned int*)0x009B090C = 1;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 1);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(50) & 0x8000)
+		{
+			*(unsigned int*)0x009B090C = 2;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 2);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(51) & 0x8000)
+		{
+			*(unsigned int*)0x009B090C = 3;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 3);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(52) & 0x8000)
+		{
+			*(unsigned int*)0x009B090C = 4;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 4);
+			}
+		}
+
+		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(53) & 0x8000)
+		{
+			*(unsigned int*)0x009B090C = 5;
+			if (ShowMessage)
+			{
+				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 5);
+			}
+		}
+	}
+
+	// Debug Camera
+	if (EnableDebugWorldCamera && (GameState == 6) && IsOnFocus)
+	{
+		if ((GetAsyncKeyState(VK_BACK) & 1)) // Backspace : Toggle Debug World Camera
+		{
+			DebugWorldCamera = !DebugWorldCamera;
+
+			if (*(int*)0x00925E90 == 6 && DebugWorldCamera)
+			{
+				injector::WriteMemory<unsigned char>(0x750F4C, 0xEB, true); // fix crash??
+				*(unsigned int*)0x0091102C = 0;
+				CameraAI_SetAction(1, "CDActionDebug");
+			}
+
+			if (*(int*)0x00925E90 == 6 && !DebugWorldCamera)
+			{
+				CameraAI_SetAction(1, "CDActionDrive");
+				*(unsigned char*)0x911038 = 0;
+				injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
+			}
+		}
+
+		if ((GetAsyncKeyState(VK_NEXT) & 1)) // Page Down : Toggle Debug Watch Car Camera
+		{
+			DebugWatchCarCamera = !DebugWatchCarCamera;
+			*(unsigned char*)0x00911058 = 1;
+
+			if (*(int*)0x00925E90 == 6 && DebugWatchCarCamera)
+			{
+				injector::WriteMemory<unsigned char>(0x750F4C, 0xEB, true); // fix crash??
+				*(unsigned char*)0x911038 = 1;
+				CameraAI_SetAction(1, "CDActionDebugWatchCar");
+			}
+
+			if (*(int*)0x00925E90 == 6 && !DebugWatchCarCamera)
+			{
+				CameraAI_SetAction(1, "CDActionDrive");
+				*(unsigned char*)0x911038 = 0;
+				injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
+			}
+		}
+
+		if ((GetAsyncKeyState(VK_ADD) & 1) && DebugWatchCarCamera) // + : Next car
+		{
+			*(unsigned char*)0x00911058 += 1;
+		}
+
+		if ((GetAsyncKeyState(VK_SUBTRACT) & 1) && DebugWatchCarCamera) // - : Previous car
+		{
+			*(unsigned char*)0x00911058 -= 1;
+		}
+	}
+
+	// Continue after a dialog is closed
+	if ((GameState == 6) && (ButtonResult == DialogBoxReturn))
+	{
+		ButtonResult = 0;
+		UnPause(NULL);
+	}
+
+	_asm popad;
 }
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD reason, LPVOID /*lpReserved*/)
