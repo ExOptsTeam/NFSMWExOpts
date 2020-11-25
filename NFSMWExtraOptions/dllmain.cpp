@@ -10,7 +10,7 @@
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit;
-bool copLightsEnabled, ShowTollbooth, ShowMoreRaceOptions, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, ShowChallenge, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, ShowMoreCustomizationOptions, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix;
+bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
 HWND windowHandle;
 
@@ -45,7 +45,6 @@ DWORD WindowedModeCodeCaveExit = 0x6E6C13;
 DWORD ReplayBlacklistFixCodeCaveExit = 0x6243F4;
 DWORD CarSkinFixCodeCaveExit = 0x747F3F;
 DWORD CarSkinFixCodeCaveExit2 = 0x747F2B;
-DWORD GRaceCustomHeatLevelCodeCaveExit = 0x56DD63;
 
 DWORD GlobalTimerAddress = 0x009885D8;
 DWORD TimerAddress = 0x009142DC;
@@ -87,7 +86,7 @@ DWORD SplitScreenCodeCaveExit = 0x7AA82A;
 #define DialogBoxButtonOK 0x417B2601
 #define ESRBOBJHASH 0xBDE7FA72
 #define EVENTIDOBJHASH 0xBBF970CD
-#define TAKEOVERSTRING "NFSMW Extra Options - © 2020 ExOpts Team. No Rights Reserved."
+#define TAKEOVERSTRING "NFSMW Extra Options - © 2021 ExOpts Team. No Rights Reserved."
 
 void __declspec(naked) CameraNamesCodeCave()
 {
@@ -517,169 +516,6 @@ void __declspec(naked) CarSkinFixCodeCave()
 	}
 }
 
-void __declspec(naked) TrackOptionsHeatLevelCodeCave()
-{
-	_asm
-	{
-		mov ecx, edi
-		call UIQRTrackOptions_SetupTollbooth
-
-		originalcode :
-			pop esi
-			pop ebp
-			pop edi
-			mov ecx, [esp + 0x08]
-			mov fs : [00000000], ecx
-			add esp, 0x14
-			retn
-	}
-}
-
-void __declspec(naked) TrackOptionsHeatLevelCodeCave2()
-{
-	_asm
-	{
-		mov ecx, esi
-		call UIQRTrackOptions_SetupTollbooth
-
-		originalcode :
-			mov ecx, [esp + 0x14]
-			pop edi
-			pop esi
-			pop ebp
-			mov fs : [00000000], ecx
-			add esp, 0x14
-			retn
-	}
-}
-
-int(__thiscall *cFrontendDatabase_GetQuickRaceSettings)(DWORD *, signed int) = (int(__thiscall*)(DWORD *, signed int))0x0056DBE0;
-unsigned int(__cdecl *FEngSetLanguageHash)(DWORD FEString, unsigned int StringHash) = (unsigned int(__cdecl*)(DWORD, unsigned int))0x515C00;
-
-int __fastcall CopDensity_Act(BYTE *_this, void *Unused, const char *unk, unsigned int a3)
-{
-	BYTE *v4; // esi
-	__int8 v5; // ebx
-	int v6; // eax
-	int FEDatabase = 0x91cf90;
-
-	v4 = _this;
-	v5 = *(__int8 *)(cFrontendDatabase_GetQuickRaceSettings((DWORD *)*(DWORD *)FEDatabase, 11) + 9);
-
-	if (*(unsigned char*)(*(DWORD*)FEDatabase + 0x18) == 8)
-	{
-		if (a3 == 0x9120409E && --v5 < 1)
-		{
-			v5 = 3;
-		}
-		else if (a3 == 0xB5971BF1 && ++v5 > 3)
-		{
-			v5 = 1;
-		}
-	}
-
-	else
-	{
-		if (a3 == 0x9120409E && --v5 < 0)
-		{
-			v5 = 3;
-		}
-		else if (a3 == 0xB5971BF1 && ++v5 > 3)
-		{
-			v5 = 0;
-		}
-	}
-	
-	*(BYTE *)(cFrontendDatabase_GetQuickRaceSettings((DWORD *)*(DWORD *)FEDatabase, 11) + 9) = v5;
-
-	// Toggle cops option according to cop density
-	if (v5 != 0) *(BYTE *)(cFrontendDatabase_GetQuickRaceSettings((DWORD *)*(DWORD *)FEDatabase, 11) + 12) = 1;
-	else *(BYTE *)(cFrontendDatabase_GetQuickRaceSettings((DWORD *)*(DWORD *)FEDatabase, 11) + 12) = 0;
-
-	v6 = *(DWORD *)v4;
-	v4[42] = 1;
-	(*(void(__thiscall **)(BYTE *, unsigned int))(v6 + 56))(v4, a3); // FEToggleWidget_BlinkArrows
-	return (*(int(__thiscall **)(BYTE *))(*(DWORD *)v4 + 12))(v4); // CopDensity_Draw
-}
-
-int __fastcall CopDensity_Draw(DWORD *_this, void *Unused)
-{
-	DWORD *v1; // edi
-	signed int v2; // esi
-	int FEDatabase = 0x91cf90;
-
-	if (*(unsigned char*)(*(DWORD*)FEDatabase + 0x18) == 8)
-	{
-		*(unsigned char*)(*(DWORD*)FEDatabase + 0xE8) = 1;
-	}
-
-	v1 = _this;
-	v2 = 0;
-	switch (*(unsigned __int8 *)(cFrontendDatabase_GetQuickRaceSettings((DWORD *)*(DWORD *)FEDatabase, 11) + 9))
-	{
-	case 0u:
-		v2 = 0x8CDC3937; // None
-		break;
-	case 1u:
-		v2 = 0x73C615A3; // Minimum
-		break;
-	case 2u:
-		v2 = 0xA2CCA838; // Moderate
-		break;
-	case 3u:
-		v2 = 0x61D1C5A5; // Maximum
-		break;
-	default:
-		break;
-	}
-	FEngSetLanguageHash(v1[12], v2);
-	return FEngSetLanguageHash(v1[11], 0x251A34F8);
-}
-
-int(__thiscall *GRaceCustom_SetAttribute)(DWORD *_this, unsigned int AttribHash, signed int *ValuePtr, int Unk) = (int(__thiscall*)(DWORD*, unsigned int, signed int*, int))0x5E74C0;
-
-int __fastcall GRaceCustom_SetCopDensity(DWORD *_this, DWORD* Unused, signed int a1)
-{
-	int result; // eax
-
-	if (a1)
-	{
-		if (a1 == 1)
-		{
-			a1 = 66;
-			result = GRaceCustom_SetAttribute(_this, 0xDBC08D32, &a1, 0);
-		}
-		else
-		{
-			if (a1 == 2)
-				a1 = 100;
-			else
-				a1 = 0;
-			result = GRaceCustom_SetAttribute(_this, 0xDBC08D32, &a1, 0);
-		}
-	}
-	else
-	{
-		a1 = 33;
-		result = GRaceCustom_SetAttribute(_this, 0xDBC08D32, &a1, 0);
-	}
-	return result;
-}
-
-void __declspec(naked) GRaceCustomHeatLevelCodeCave()
-{
-	_asm
-	{
-		movzx edx, byte ptr ds: [edi + 0x9]
-		push edx
-		mov ecx, esi
-		call GRaceCustom_SetCopDensity
-		movzx eax, byte ptr ds : [edi + 0x8]
-		push eax
-		jmp GRaceCustomHeatLevelCodeCaveExit
-	}
-}
-
 void __declspec(naked) SplitScreen_React()
 {
 	
@@ -857,10 +693,6 @@ void Init()
 	highTraffic = iniReader.ReadInteger("TrafficControllers", "High", 50);
 
 	// Menu
-	ShowTollbooth = iniReader.ReadInteger("Menu", "ShowTollbooth", 1) == 1;
-	ShowChallenge = iniReader.ReadInteger("Menu", "ShowChallenge", 0) == 1;
-	ShowMoreRaceOptions = iniReader.ReadInteger("Menu", "ShowMoreRaceOptions", 1) == 1;
-	ShowMoreCustomizationOptions = iniReader.ReadInteger("Menu", "ShowMoreCustomizationOptions", 0) == 1;
 	HideOnline = iniReader.ReadInteger("Menu", "ShowOnline", 1) == 0;
 	ShowOnlineOpts = iniReader.ReadInteger("Menu", "ShowOnlineOpts", 0) == 1;
 	ShowSubs = iniReader.ReadInteger("Menu", "ShowSubs", 0) == 1;
@@ -1150,52 +982,6 @@ void Init()
 	injector::WriteMemory<DWORD>(0x7AAB1A, 0x213CC8D1, true); // Challenge name hash
 	injector::WriteMemory<DWORD>(0x7AAB1F, 0x9A962438, true); // Challenge icon hash
 	injector::WriteMemory<unsigned char>(0x7AAB33, 0x08, true); // Challenge game mode
-
-	if (!ShowTollbooth) // Remove Tollbooth if the option is 0
-		injector::MakeJMP(0x7AAA11, 0x7AAA5D, true);
-
-	if (!ShowChallenge) // Remove Challenge if the option is 0
-		injector::MakeJMP(0x7AAAEF, 0x7AAB3B, true);
-
-	// Show More Race Options
-	if (ShowMoreRaceOptions)
-	{
-		// CopDensity::vtbl
-		injector::WriteMemory<DWORD>(0x901300, 0x7B4C20, true); //Destroyer
-		injector::WriteMemory(0x901304, &CopDensity_Act, true); // Act
-		injector::WriteMemory<DWORD>(0x901308, 0x574540, true); // FEToggleWidget::CheckMouse
-		injector::WriteMemory(0x90130C, &CopDensity_Draw, true); // Draw
-		injector::WriteMemory<DWORD>(0x901310, 0x589390, true); // FEToggleWidget::Position
-		injector::WriteMemory<DWORD>(0x901314, 0x5745B0, true); // FEToggleWidget::Show
-		injector::WriteMemory<DWORD>(0x901318, 0x5745F0, true); // FEToggleWidget::Hide
-		injector::WriteMemory<DWORD>(0x90131C, 0x589410, true); // FEToggleWidget::Enable
-		injector::WriteMemory<DWORD>(0x901320, 0x589440, true); // FEToggleWidget::Disable
-		injector::WriteMemory<DWORD>(0x901324, 0x574630, true); // FEToggleWidget::SetFocus
-		injector::WriteMemory<DWORD>(0x901328, 0x574660, true); // FEToggleWidget::UnsetFocus
-		injector::WriteMemory<DWORD>(0x90132C, 0x51A6C0, true); // FEStatWidget::SetPos
-		injector::WriteMemory<DWORD>(0x901330, 0x574480, true); // FEStatWidget::SetPosX
-		injector::WriteMemory<DWORD>(0x901334, 0x5744E0, true); // FEStatWidget::SetPosY
-		injector::WriteMemory<DWORD>(0x901338, 0x574670, true); // FEToggleWidget::BlinkArrows
-
-		// Repurpose Tollbooth menu to add Heat Level option
-		injector::WriteMemory<unsigned char>(0x7AD359, 0xEB, true); // Jump to menu option
-		injector::WriteMemory<DWORD>(0x7AD3C3, 0x901300, true); // Replace Traffic level with heat level
-		// injector::WriteMemory<DWORD>(0x007AD3C3, 0x8B78C8, true); // Replace Traffic level with heat level
-
-		// AI Opponents in tollbooth
-		injector::MakeNOP(0x61DC9D, 6, true); // Enable opponents in tollbooth
-		injector::MakeCALL(0x7BA9BD, 0x7ACAD0, true); // Use Sprint Menu
-
-		injector::MakeCALL(0x7BA9B4, 0x7ACAD0, true); // Speedtrap -> Use Sprint Menu
-
-		// Add to menus
-		injector::MakeJMP(0x7ACA88, TrackOptionsHeatLevelCodeCave, true); // Circuit, Challenge & Others
-		injector::MakeJMP(0x7ACC6B, TrackOptionsHeatLevelCodeCave, true); // Sprint (Speedtrap & Tollbooth)
-		injector::MakeJMP(0x7AD0D2, TrackOptionsHeatLevelCodeCave2, true); // Lap KO
-
-		// Read value before races
-		injector::MakeJMP(0x56DD5E, GRaceCustomHeatLevelCodeCave, true);
-	}
 
 	// Show Hidden Tracks in QR Track select
 	if (ShowHiddenTracks)
@@ -1613,22 +1399,6 @@ void Init()
 	{
 		injector::WriteMemory<unsigned char>(0x75B229, 0, true);
 	}
-
-	// Show More Customization Options
-	if (ShowMoreCustomizationOptions)
-	{
-		// Show Backroom Parts on Customization
-		injector::MakeNOP(0x7AF669, 2, true);
-
-		// Enable All Customizations For All Cars
-		injector::MakeNOP(0x7BCDD0, 2, true); //My Cars
-		injector::MakeNOP(0x7BCE33, 2, true); //Backroom Categories
-		injector::MakeNOP(0x7B123D, 2, true); //Backroom HUD Area
-		injector::MakeNOP(0x7BFF49, 6, true); //Backroom Menu
-		injector::MakeNOP(0x7B92DC, 6, true); //Backroom Parts
-		injector::MakeNOP(0x7BC28C, 2, true); //Rim Paint
-	}
-	
 
 	// Time Of Day (Replaces Level of Detail)
 	if (ShowTimeOfDay)
