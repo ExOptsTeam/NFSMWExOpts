@@ -975,14 +975,6 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x8B2810, 0x54, true);
 	}
 
-	// Add Tollbooth and Challenge options to quick race menu
-	injector::MakeNOP(0x7aa924, 6, true);
-	injector::MakeNOP(0x7AA97F, 6, true);
-	injector::MakeJMP(0x7aaa5d, 0x7AAAEF, true);
-	injector::WriteMemory<DWORD>(0x7AAB1A, 0x213CC8D1, true); // Challenge name hash
-	injector::WriteMemory<DWORD>(0x7AAB1F, 0x9A962438, true); // Challenge icon hash
-	injector::WriteMemory<unsigned char>(0x7AAB33, 0x08, true); // Challenge game mode
-
 	// Show Hidden Tracks in QR Track select
 	if (ShowHiddenTracks)
 	{
