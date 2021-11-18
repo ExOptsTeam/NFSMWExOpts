@@ -1,16 +1,17 @@
 ﻿#include "stdafx.h"
 #include "stdio.h"
-#include "DialogInterfaceHook.h"
 #include <windows.h>
 #include "..\includes\injector\injector.hpp"
 #include <cstdint>
 #include "..\includes\IniReader.h"
 #include <math.h>
 
+#include "InGameFunctions.h"
+
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit;
-bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix;
+bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
 HWND windowHandle;
 
@@ -19,643 +20,10 @@ void Thing();
 bool forceHeatLevel = 0, carHackEnabled = 0, once1 = 0, once2 = 0, once3 = 0, IsOnFocus, AutoDrive, ToggleCops = 1;
 DWORD ButtonResult = 0;
 
-DWORD CameraNamesCodeCaveExit = 0x51C98C;
-DWORD HeatLevelsCodeCaveExit = 0x443dc9;
-DWORD VinylMenuCodeCaveExit = 0x7BC908;
-DWORD VinylMenuCodeCave2Exit = 0x7BD30F;
-DWORD VinylMenuCodeCave2ifAbove = 0x7BD210;
-DWORD ShowHiddenTracksCodeCaveExit = 0x7BA6F1;
-DWORD GRaceDatabase_GetBinNumber = 0x5E3980;
-DWORD GRaceDatabase_GetRaceFromHash = 0x5FB710;
-DWORD AddToRaceList = 0x7AAC70;
-DWORD GRaceDatabase_GetRaceCount = 0x5DC920;
-DWORD IconFixCodeCaveExit = 0x56E099;
-DWORD LANRaceSelectFixCodeCaveExit = 0x7aa8ed;
-DWORD LANRaceModeFixCodeCaveExit = 0x5395a3;
-DWORD LANRaceModeFixCodeCave2Exit = 0x535ecb;
-DWORD HeliBountyFixCodeCaveExit = 0x595BF2;
-DWORD HeliBountyFixCodeCave2Exit = 0x418F8C;
-DWORD X10FixCodeCaveExit = 0x418F61;
-DWORD X10FixCodeCave2Exit = 0x41901F;
-DWORD AnnounceBountyReward = 0x595C37;
-DWORD VTCodeCaveExit = 0x73E361;
-DWORD DialogBoxReturnValueExit = 0x007C7250;
-DWORD CreateGameWindow = 0x6E6310;
-DWORD WindowedModeCodeCaveExit = 0x6E6C13;
-DWORD ReplayBlacklistFixCodeCaveExit = 0x6243F4;
-DWORD CarSkinFixCodeCaveExit = 0x747F3F;
-DWORD CarSkinFixCodeCaveExit2 = 0x747F2B;
-
-DWORD GlobalTimerAddress = 0x009885D8;
-DWORD TimerAddress = 0x009142DC;
-float PreviousRaceTime = 0.0f;
-
-// Properly implemented functions for calling
-void(*CameraAI_SetAction)(int EVIEW_ID, char* Action) = (void(*)(int, char*))0x479EB0;
-int(__cdecl *UnPause)(const void* unk) = (int(__cdecl*)(const void*))0x632190;
-unsigned int(__cdecl *stringhash32)(const char* k) = (unsigned int (__cdecl*)(const char*))0x005CC240;
-unsigned int(__thiscall *CustomizeCategoryScreen_AddCustomOption)(void* TheThis, const char* unk1, unsigned int unk2, unsigned int unk3, unsigned int unk4) = (unsigned int(__thiscall*)(void*, const char*, unsigned int, unsigned int, unsigned int))0x007BB560;
-const char*(__thiscall* GRaceParameters_GetEventID)(void* GRaceParameters) = (const char*(__thiscall*)(void*))0x005FBA70;
-int(__cdecl *bSPrintf)(char* destString, const char* format, ...) = (int(__cdecl*)(char*, const char*, ...))0x004647C0;
-unsigned int(__cdecl *bStringHash)(const char *text) = (unsigned int(__cdecl*)(const char*))0x460BF0;
-int(__thiscall *UIQRTrackOptions_SetupTollbooth)(void* UIQRTrackOptions) = (int(__thiscall*)(void*))0x7AD310;
-void(__cdecl *FE_Object_SetCenter)(DWORD* FEObject, float _PositionX, float _PositionY) = (void(__cdecl*)(DWORD*, float, float))0x525050;
-void(__cdecl *FE_Object_GetCenter)(DWORD* FEObject, float *PositionX, float *PositionY) = (void(__cdecl*)(DWORD*, float*, float*))0x524EE0;
-int(__cdecl *FEngSetVisible)(DWORD* FEObject) = (int(__cdecl*)(DWORD*))0x514CC0;
-int(__cdecl *FEngSetInvisible)(DWORD* FEObject) = (int(__cdecl*)(DWORD*))0x514C70;
-int(__cdecl *FEngSetVisible2)(const char *FEPackage, DWORD FEObjectHash) = (int(__cdecl*)(const char*,DWORD))0x527DF0;
-void(*Game_SetWorldHeat)(float DesiredHeatLevel) = (void(*)(float))0x612660;
-void(*Game_ForceAIControl)(int Unk) = (void(*)(int))0x6123B0;
-void(*Game_ClearAIControl)(int Unk) = (void(*)(int))0x612420;
-void(*Game_SetCopsEnabled)(bool AreCopsEnabled) = (void(*)(bool))0x604F40;
-bool(__thiscall *PVehicle_IsGlareOn)(DWORD* PVehicle, int VehicleFXID) = (bool(__thiscall*)(DWORD*, int))0x6881C0;
-void(__thiscall *PVehicle_GlareOn)(DWORD* PVehicle, int VehicleFXID) = (void(__thiscall*)(DWORD*, int))0x669360;
-void(__thiscall *PVehicle_GlareOff)(DWORD* PVehicle, int VehicleFXID) = (void(__thiscall*)(DWORD*, int))0x669380;
-void(__thiscall *GRaceDatabase_GetScoreInfo)(void* GRaceParameters, int EventHash) = (void(__thiscall*)(void*, int))0x5DCA70;
-const char* (__thiscall* GRaceDatabase_GetNextDDayRace)(void* GRaceParameters) = (const char* (__thiscall*)(void*))0x600C30;
-
-DWORD GRaceDatabase_GetRaceParameters = 0x005DC930;
-DWORD GRaceParameters_GetEventHash = 0x005FAB40;
-DWORD j_malloc = 0x652AD0;
-DWORD IconOption_Create = 0x586FA0;
-DWORD IconScrollerMenu_AddOption = 0x573960;
-DWORD FEngGetLastButton = 0x571E80;
-DWORD SplitScreenCodeCaveExit = 0x7AA82A;
-
-#define DialogBoxReturn 0x1337DBFF
-#define DialogBoxButtonOK 0x417B2601
-#define ESRBOBJHASH 0xBDE7FA72
-#define EVENTIDOBJHASH 0xBBF970CD
-#define TAKEOVERSTRING "NFSMW Extra Options - © 2021 ExOpts Team. No Rights Reserved."
-
-void __declspec(naked) CameraNamesCodeCave()
-{
-	_asm
-	{
-			cmp ecx, 0
-			je bumper
-			cmp ecx, 1
-			je hood
-			cmp ecx, 2
-			je close
-			cmp ecx, 3
-			je farcam
-			cmp ecx, 4
-			je superfar
-			cmp ecx, 5
-			je drift
-			cmp ecx, 6
-			je pursuit
-			jmp CameraNamesCodeCaveExit
-
-		bumper :
-			mov eax, 0xC3E9AE58
-			jmp CameraNamesCodeCaveExit
-
-		hood :
-			mov eax, 0x414F19D7
-			jmp CameraNamesCodeCaveExit
-
-		close :
-			mov eax, 0x5AE3441F
-			jmp CameraNamesCodeCaveExit
-
-		farcam :
-			mov eax, 0x1EA4CEC2
-			jmp CameraNamesCodeCaveExit
-
-		superfar :
-			mov eax, 0x916039B4
-			jmp CameraNamesCodeCaveExit
-
-		drift :
-			mov eax, 0xA1211428
-			jmp CameraNamesCodeCaveExit
-
-		pursuit :
-			mov eax, 0x7448870B
-			jmp CameraNamesCodeCaveExit
-	}
-}
-
-void __declspec(naked) HeatLevelsCodeCave()
-{
-	if (EnableHeatLevelOverride)
-	{
-		_asm
-		{
-			mov ebx, MaxHeatLevel
-			mov[esi + 0xE0], ebx
-			mov ebx, MinHeatLevel
-			mov[esi + 0xDC], ebx
-		}
-	}
-	_asm
-	{
-		mov edx, [esi + 0xE0]
-		jmp HeatLevelsCodeCaveExit
-	}
-}
-
-void __declspec(naked) VinylMenuCodeCave()
-{
-	_asm
-	{
-			mov edx, dword ptr ds : [0x905EB0]
-			push 0x0000040A
-			push 0xB715070A
-			push 0x55778E5A
-			push edx
-			mov ecx, esi
-			call CustomizeCategoryScreen_AddCustomOption
-			lea eax, [esp + 0x14]
-			mov ebp, 1
-			jmp VinylMenuCodeCaveExit
-	}
-}
-
-void __declspec(naked) VinylMenuCodeCave2()
-{
-	_asm
-	{
-			cmp eax, 0x06
-			ja ifabove
-
-			cmp eax, 0x00
-			je stripes
-			cmp eax, 0x01
-			je raceflags
-			cmp eax, 0x02
-			je nflags
-			cmp eax, 0x03
-			je body
-			cmp eax, 0x04
-			je uniques
-			cmp eax, 0x05
-			je contest
-			cmp eax, 0x06
-			je specials
-			jmp VinylMenuCodeCave2Exit
-
-
-		stripes :
-			mov dword ptr ds : [edi + 0x15C], 0x1C619FD8
-			mov ebp, 0xF7352706
-			mov dword ptr ds : [esp + 0x18], 0x00000002
-			jmp VinylMenuCodeCave2Exit
-
-		raceflags :
-			mov dword ptr ds : [edi + 0x15C], 0x9C1B8935
-			mov ebp, 0x1223CC89
-			mov dword ptr ds : [esp + 0x18], 0x00000003
-			jmp VinylMenuCodeCave2Exit
-
-		nflags :
-			mov dword ptr ds : [edi + 0x15C], 0x7956F7B0
-			mov ebp, 0xBC44BBCB
-			mov dword ptr ds : [esp + 0x18], 0x00000004
-			jmp VinylMenuCodeCave2Exit
-
-		body :
-			mov dword ptr ds : [edi + 0x15C], 0x2D5BFF0F
-			mov ebp, 0x694CA0CA
-			mov dword ptr ds : [esp + 0x18], 0x00000005
-			jmp VinylMenuCodeCave2Exit
-
-		uniques :
-			mov dword ptr ds : [edi + 0x15C], 0x209A9158
-			mov ebp, 0x1B3A8DD3
-			mov dword ptr ds : [esp + 0x18], 0x00000006
-			jmp VinylMenuCodeCave2Exit
-
-		contest :
-			mov dword ptr ds : [edi + 0x15C], 0xCD057D21
-			mov ebp, 0x1BA508FC
-			mov dword ptr ds : [esp + 0x18], 0x00000007
-			jmp VinylMenuCodeCave2Exit
-
-		specials :
-			mov dword ptr ds : [edi + 0x15C], 0xB715070A
-			mov ebp, 0x55778E5A
-			mov dword ptr ds : [esp + 0x18], 0x0000008
-			jmp VinylMenuCodeCave2Exit
-
-		ifabove :
-			jmp VinylMenuCodeCave2ifAbove
-	}
-
-}
-
-void __declspec(naked) ShowHiddenTracksCodeCave()
-{
-	_asm
-	{
-		resetcounter :
-		xor edi, edi
-
-		letsgo :
-		push edi
-		mov ecx, dword ptr ds: [0x91E004] // GRaceDatabase::mObj
-		call GRaceDatabase_GetRaceParameters
-
-		test eax, eax
-		jz check
-
-		mov ecx, [esp + 0x10]
-		push 15 // BinID
-		push ecx // Region??
-		push eax // Race
-		mov ecx, ebp // this
-		call AddToRaceList // AddToRaceList
-
-		check :
-		inc edi
-		mov ecx, dword ptr ds : [0x91E004]
-		call GRaceDatabase_GetRaceCount
-		cmp edi, eax
-		jb letsgo
-
-		caveexit :
-		jmp ShowHiddenTracksCodeCaveExit
-	}
-
-}
-
-void __declspec(naked) GetRaceTypeCodeCave()
-{
-	_asm
-	{
-		fix_20_5_1:
-			cmp dword ptr ds : [eax], 0x9C614397 // 20.5.1
-			jne fix_20_8_1
-			mov byte ptr ds : [eax + 0x2B], 5
-			jmp originalcode
-
-		fix_20_8_1:
-			cmp dword ptr ds : [eax], 0x102E6410 // 20.8.1
-			jne fix_20_1_1
-			mov byte ptr ds : [eax + 0x2B], 8
-			jmp originalcode
-
-		fix_20_1_1:
-			cmp dword ptr ds : [eax], 0xF984278B // 20.1.1
-			jne fix_20_2_1
-			mov byte ptr ds : [eax + 0x2B], 1
-			jmp originalcode
-
-		fix_20_2_1:
-			cmp dword ptr ds : [eax], 0x2D442AD8 // 20.2.1
-			jne fix_20_2_2
-			mov byte ptr ds : [eax + 0x2B], 0
-			jmp originalcode
-
-		fix_20_2_2:
-			cmp dword ptr ds : [eax], 0xC2AC6CB3 // 20.2.2
-			jne fix_maxload
-			mov byte ptr ds : [eax + 0x2B], 0
-			jmp originalcode
-
-		fix_maxload:
-			cmp dword ptr ds : [eax], 0xA137ED5B // MaxLoad
-			jne originalcode
-			mov byte ptr ds : [eax + 0x2B], 1
-			jmp originalcode
-
-		originalcode:
-			movsx eax, byte ptr ds:[eax + 0x2B]
-			pop esi
-			retn
-	}
-}
-
-void __cdecl GetGameVersionNumberStringHook(char* buffer, int bufsize)
-{
-	const char* PackageName;
-	_asm mov eax, [esi + 0x10]
-	_asm mov PackageName, eax
-
-	sprintf(buffer, "1.3"); // print the game version string
-	unsigned int* TheESRBObject = (unsigned int*)FEObject_FindObject(PackageName, ESRBOBJHASH);
-	TheESRBObject[0x1A] = strlen(TAKEOVERSTRING) + 1; // FEObject@0x68 = string length
-
-	FEColor TakeoverColor = { 255, 255, 255, 255 };
-	FEObject_SetColor((void*)TheESRBObject, TakeoverColor, 0);
-
-	FEPrintf_Obj(PackageName, (void*)TheESRBObject, TAKEOVERSTRING); // use the FEObject immediately instead of searching for it again
-}
-
-void __declspec(naked) HeliBountyFixCodeCave()
-{
-	_asm
-	{
-			push 0x8915DC //copheli
-			call stringhash32
-			add esp, 4
-			cmp esi, eax
-			jne originalcode
-			push 0x4EE07213 // Federal Pursuit Vehicle text
-			jmp AnnounceBountyReward
-
-		originalcode :
-			push 0x891238 //copsuv
-			jmp HeliBountyFixCodeCaveExit
-	}
-}
-
-void __declspec(naked) HeliBountyFixCodeCave2()
-{
-	_asm
-	{
-		// Simple method: Replaces any bounty <= 10 to 100,000.
-			cmp eax, 0x0A // 10
-			jg originalcode
-			mov eax, 0x000186A0 // 100000
-
-		originalcode :
-			mov dword ptr ds: [esi + 0xF4], eax
-
-			jmp HeliBountyFixCodeCave2Exit
-
-	}
-}
-
-void __declspec(naked) X10FixCodeCave()
-{
-	_asm
-	{
-			mov edi, [esi + 0x98]
-			cmp edi, 0x0A // If heat level is 10 or more
-			jl originalcode // If less, do nothing
-
-			mov edi, 0x09 // Read x9 Bounty Reward
-
-		originalcode:
-			jmp X10FixCodeCaveExit
-	}
-}
-
-void __declspec(naked) X10FixCodeCave2()
-{
-	_asm
-	{
-		//Simple Method: Replaces any Combo Timer >=120s to 10s.
-			cmp ecx, 0x42F00000 // if 120 seconds or higher
-			jl originalcode
-			mov ecx, 0x41200000 // 10 seconds
-
-		originalcode:
-			mov dword ptr ds: [esi + 0xEC], ecx
-
-			jmp X10FixCodeCave2Exit
-	}
-}
-
-void __declspec(naked) VTCodeCave()
-{
-	_asm
-	{
-		mov VTecx, ecx
-
-		mov eax, [edi + 0x08]
-
-		mov ecx, VTRed
-		mov	dword ptr ds : [eax + 0xC0], ecx //red
-
-		mov ecx, VTGreen
-		mov	dword ptr ds : [eax + 0xc4], ecx //green
-
-		mov ecx, VTBlue
-		mov	dword ptr ds : [eax + 0xc8], ecx //blue
-
-		mov ecx, VTColorBloom
-		mov dword ptr ds : [eax + 0xd0], ecx //color bloom
-
-		mov ecx, VTSaturation
-		mov dword ptr ds : [eax + 0xd4], ecx //saturation
-
-		mov ecx, VTBlackBloom
-		mov	dword ptr ds : [eax + 0xdc], ecx //black bloom
-
-		fld dword ptr [eax + 0xC4]
-
-		mov ecx, VTecx
-		jmp VTCodeCaveExit
-	}
-}
-
-void __declspec(naked) DialogBoxReturnValue(void* Pointer)
-{
-	_asm
-	{
-		mov eax, [esi + 0x2C]
-		mov ButtonResult, eax
-		jmp DialogBoxReturnValueExit
-	}
-}
-
-int FEngFindObjectHook(const char* pkg_name, unsigned int obj_hash)
-{
-	void* GRaceParameters;
-	_asm mov eax, [esi + 0x108]
-		_asm mov GRaceParameters, eax
-
-	FEPrintf(pkg_name, obj_hash, GRaceParameters_GetEventID(GRaceParameters));
-	return 0;
-}
-
-int FEngFindObjectHook2(const char* pkg_name, unsigned int obj_hash)
-{
-	void* GRaceParameters;
-	_asm mov GRaceParameters, ebx
-
-	FEPrintf(pkg_name, obj_hash, GRaceParameters_GetEventID(GRaceParameters));
-	return 0;
-}
-
-int __stdcall FindPackageHook(const char* pkg_name)
-{
-	void* GRaceParameters;
-	_asm mov GRaceParameters, edi
-
-	FEPrintf(pkg_name, EVENTIDOBJHASH, GRaceParameters_GetEventID(GRaceParameters));
-	return 0;
-}
-
-void __declspec(naked) ReplayBlacklistFixCodeCave()
-{
-	_asm
-	{
-		mov dword ptr ds: [0x91CA3C],edx
-		push 0x0089EB30
-		jmp ReplayBlacklistFixCodeCaveExit
-	}
-}
-
-void __declspec(naked) CarSkinFixCodeCave()
-{
-	_asm
-	{
-		cmp edi, 1
-		jl caveexit2
-		cmp edi, 4
-		jg fixskinid
-
-		caveexit:
-			mov esi,ecx
-			mov byte ptr ds: [esi+07], 1
-			jmp CarSkinFixCodeCaveExit
-
-		fixskinid: // swap around DUMMY_SKIN/WHEEL2,3 and 4
-			sub edi, 03
-			cmp edi, 04
-			jg fixskinid
-			jmp caveexit
-
-		caveexit2:
-			jmp CarSkinFixCodeCaveExit2
-	}
-}
-
-void __declspec(naked) SplitScreen_React()
-{
-	
-	_asm
-	{
-		cmp dword ptr ds : [esp + 0x8], 0x0C407210
-		jnz funcexit
-		mov dword ptr ds : [0x9B9E68], 2
-		
-		funcexit:
-			retn 0x14
-	}
-}
-
-void __declspec(naked) SplitScreenCodeCave()
-{
-	_asm
-	{
-		push 0x4C
-		call j_malloc
-		mov edi, eax
-		add esp, 04
-		mov dword ptr ds: [esp + 0x8], edi
-		test edi, edi
-		mov dword ptr ds: [esp + 0x14], 00000003
-		je ssjump1
-		push 0
-		push 0x841D518A
-		push 0xF365B5F5
-		mov ecx, edi
-		call IconOption_Create
-		push ebx
-		mov ebx, 0x901400
-		mov dword ptr ds: [edi], ebx
-		pop ebx
-		jmp ssjump2
-
-		ssjump1:
-			xor edi, edi
-
-		ssjump2:
-			mov ecx, esi
-			push edi
-			mov[esp + 0x18], 0xFFFFFFFF
-			call IconScrollerMenu_AddOption
-
-
-		originalcode:
-			mov eax, [esi + 0x10]
-			push eax
-			call FEngGetLastButton
-
-		caveexit:
-		jmp SplitScreenCodeCaveExit
-	}
-}
-
-void __declspec(naked) MaxPerfButtonCodeCave()
-{
-	_asm
-	{
-		mov esi, [esi + 0x10]
-		push 0x8805E665
-		push esi
-		call FEObject_FindObject
-		push 0x43340000 // 180.0
-		push 0xC3710000 // -241.0
-		push eax // object
-		call FE_Object_SetCenter
-		push ecx // setcenter moves object to ecx??
-		call FEngSetVisible
-		add esp, 0x18
-		pop esi
-		add esp, 0x40
-		retn
-	}
-}
-
-void __declspec(naked) DDayFixCodeCaveResumeCareer()
-{
-	_asm
-	{
-		call GRaceDatabase_GetScoreInfo
-		test al,al
-		jnz StartFreeRoamOrFinalPursuit
-
-		mov eax, dword ptr ds: [0x91CF90] // FEDatabase
-		test eax,eax
-		jz StartDDay
-		mov eax, [eax + 0x10]
-		test eax, eax
-		jz StartDDay
-		movzx eax, byte ptr ds : [eax + 0xB0]
-		cmp eax, 16
-		jl StartFreeRoamOrFinalPursuit
-
-		StartDDay:
-			push 0x57F5B2
-			retn
-
-		StartFreeRoamOrFinalPursuit:
-			push 0x57F5B6
-			retn
-	}
-}
-
-void __declspec(naked) DDayFixCodeCaveCareerCribNotificationMessage()
-{
-	_asm
-	{
-		mov eax, dword ptr ds : [0x91CF90] // FEDatabase
-		test eax, eax
-		jz StartDDay
-		mov eax, [eax + 0x10]
-		test eax, eax
-		jz StartDDay
-		movzx eax, byte ptr ds: [eax + 0xB0]
-		cmp eax, 16
-		jl StartFreeRoamOrFinalPursuit
-
-		StartDDay:
-			call GRaceDatabase_GetNextDDayRace
-			push 0x531FD6
-			retn
-
-		StartFreeRoamOrFinalPursuit :
-			push 0x532015
-			retn
-	}
-}
-
-int Return0Hook()
-{
-	return 0;
-}
-
-float Return0fHook()
-{
-	return 0.0f;
-}
+#include "DialogInterfaceHook.h"
+#include "ExtraOptionsStuff.h"
+#include "LanguageSelectScreen.h"
+#include "ScreenPrintf.h"
 
 void Init()
 {
@@ -697,6 +65,7 @@ void Init()
 	ShowOnlineOpts = iniReader.ReadInteger("Menu", "ShowOnlineOpts", 0) == 1;
 	ShowSubs = iniReader.ReadInteger("Menu", "ShowSubs", 0) == 1;
 	EnablePresetAndDebugCars = iniReader.ReadInteger("Menu", "ShowMoreCarCategories", 0) == 1;
+	ShowLanguageSelectScreen = iniReader.ReadInteger("Menu", "ShowLanguageSelectScreen", 1) == 1;
 	moreVinyls = iniReader.ReadInteger("Menu", "ShowSpecialVinyls", 1) == 1;
 	ShowDebugCarCustomize = iniReader.ReadInteger("Menu", "ShowDebugCarCustomize", 0) == 1;
 	ShowDebugEventID = iniReader.ReadInteger("Menu", "ShowDebugEventID", 0) == 1;
@@ -729,6 +98,7 @@ void Init()
 	CarbonStyleRaceProgress = iniReader.ReadInteger("Gameplay", "ShowPercentOn1LapRaces", 1) == 1;
 	StartingCashDWORD = iniReader.ReadInteger("Gameplay", "StartingCash", 0);
 	UG2SaveMoney = iniReader.ReadInteger("Gameplay", "AwardedCash", 10000);
+	WorldMapAnywhere = iniReader.ReadInteger("Gameplay", "WorldMapAnywhere", 1) == 1;
 	UnlockAllThings = iniReader.ReadInteger("Gameplay", "UnlockAllThings", 0) == 1;
 	ForceBlackEdition = iniReader.ReadInteger("Gameplay", "ForceBlackEdition", 1) == 1;
 	eatSomeBurgers = iniReader.ReadInteger("Gameplay", "UnlockBurgerKingChallenge", 0) == 1;
@@ -798,6 +168,7 @@ void Init()
 	AllowMultipleInstances = iniReader.ReadInteger("Misc", "AllowMultipleInstances", 0) == 1;
 	ThreadDelay = iniReader.ReadInteger("Misc", "ThreadDelay", 5);
 	ExpandMemoryPools = iniReader.ReadInteger("Misc", "ExpandMemoryPools", 0) == 1;
+	DoScreenPrintf = iniReader.ReadInteger("Misc", "DoScreenPrintf", 1) == 1;
 
 	// Limit values to fix increment & decrement behaviour breaking
 
@@ -1521,6 +892,37 @@ void Init()
 		injector::MakeJMP(0x531FCA, DDayFixCodeCaveCareerCribNotificationMessage, true);
 	}
 
+	// Fix and enable language select screen
+	if (ShowLanguageSelectScreen)
+	{
+		injector::WriteMemory(0x8F3C74, 0x89F7EC, true); // Replace DiscErrorPC.fng with LS_LangSelect.fng
+		injector::WriteMemory(0x8F3C94, 0x89F7EC, true); // Replace DiscErrorPC.fng with LS_LangSelect.fng
+		injector::WriteMemory(0x8F3CB0, 0x89F7EC, true); // Replace DiscErrorPC.fng with LS_LangSelect.fng
+		injector::MakeJMP(0x58E9FC, 0x58EAB4, true); // BootFlowManager::BootFlowManager (Force PAL for lang select)
+		injector::WriteMemory<short>(0x64A140, 0x01B0, true); // BuildRegion::ShowLanguageSelect - mov al,1
+		injector::MakeCALL(0x5A47F9, LanguageSelectScreen_LanguageSelectScreen, true); // CreateLanguageSelectScreen
+	}
+
+	// Screen Printf
+	if (DoScreenPrintf)
+	{
+		injector::WriteMemory(0x926140, 1, true); // Vanilla variable
+		injector::MakeJMP(0x666110, InitScreenPrintfCodeCave, true);
+		injector::MakeJMP(0x64A80F, DisplayDebugScreenPrints, true);
+		injector::WriteMemory(0x89B45C, ResetScreenPrintf, true); // cFEngGameInterface::EndPackageRendering
+
+		// Code caves for functions which had screen printfs in Alpha 124
+		injector::MakeJMP(0x542A42, MoviePlayer_Play_ScreenPrintf, true);
+		injector::MakeJMP(0x564471, FEManager_Update_ScreenPrintf, true);
+		injector::MakeJMP(0x7A8D3B, FindScreenInfo_ScreenPrintf, true); // my cars crash
+		injector::MakeJMP(0x7A8EBD, FindScreenInfo_ScreenPrintf2, true);
+	}
+
+	// World Map Anywhere
+	if (WorldMapAnywhere)
+	{
+		injector::MakeRangedNOP(0x57C934, 0x57C93A, true);
+	}
 
 	// Other Things
 	//CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&Thing, NULL, 0, NULL);
@@ -1537,13 +939,20 @@ void Thing()
 	windowHandle = *(HWND*)0x982BF4;
 	IsOnFocus = !(*(bool*)0x982C50);
 
-	// Windowed Mode Related Fixes
-	if (WindowedMode == 2 && windowHandle && !once2)
+	// Windowed Mode Related Fixes (Center and Resize)
+	if (WindowedMode && windowHandle && !once2)
 	{
 		RECT o_cRect, n_cRect, n_wRect;
 		GetClientRect(windowHandle, &o_cRect);
 
-		DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE) | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW;
+		DWORD wStyle = GetWindowLongPtr(windowHandle, GWL_STYLE);
+
+		switch (WindowedMode)
+		{
+		case 1: wStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU); break;
+		case 2: default: wStyle |= (WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW); break;
+		}
+
 		SetWindowLongPtr(windowHandle, GWL_STYLE, wStyle);
 
 		// make window change style
@@ -1558,7 +967,14 @@ void Thing()
 		int newWidth = n_wWidth + dif_wWidth;
 		int newHeight = n_wHeight + dif_wHeight;
 
-		SetWindowPos(windowHandle, NULL, 0, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+		HWND hDesktop = GetDesktopWindow();
+		RECT desktop;
+		GetWindowRect(hDesktop, &desktop);
+
+		int newXPos = ((desktop.right - desktop.left) - newWidth) / 2;
+		int newYPos = ((desktop.bottom - desktop.top) - newHeight) / 2;
+
+		SetWindowPos(windowHandle, NULL, newXPos, newYPos, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
 
 		once2 = 1;
 	}
