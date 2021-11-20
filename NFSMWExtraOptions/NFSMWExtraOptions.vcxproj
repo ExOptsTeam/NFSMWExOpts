@@ -91,9 +91,13 @@ copy "$(TargetDir)*.pdb" "G:\Games\Need for Speed Most Wanted\scripts"  /y</Comm
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CodeCaves.h" />
     <ClInclude Include="DialogInterfaceAddresses.h" />
     <ClInclude Include="DialogInterfaceHook.h" />
     <ClInclude Include="ExtraOptionsStuff.h" />
+    <ClInclude Include="GlobalVariables.h" />
+    <ClInclude Include="Helpers.h" />
+    <ClInclude Include="HotkeyStuff.h" />
     <ClInclude Include="InGameFunctions.h" />
     <ClInclude Include="LanguageSelectScreen.h" />
     <ClInclude Include="resource.h" />

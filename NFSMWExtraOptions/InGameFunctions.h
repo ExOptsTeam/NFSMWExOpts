@@ -2,19 +2,7 @@
 
 #include "stdio.h"
 #include <windows.h>
-
-#define MSOption_vtable 0x8B75B0
-#define cFEng_mInstance 0x91CADC
-#define cFEngRender_mInstance 0x91CFA8
-#define DebugVehicleSelection_mThis 0x9B08F8
-#define _PlayerPVehicle 0x92CD28
-#define _FEDatabase 0x91CF90
-#define nullString 0x890978
-#define _RealTimer 0x925B14
-#define TheTrackStreamer 0x9AA9D0
-#define GRaceStatus_fObj 0x91E000
-
-#define LanguageSelectScreen_vtable 0x8A1D2C
+#include "GlobalVariables.h"
 
 void* (*j_malloc)(size_t) = (void* (*)(size_t))0x652AD0;
 unsigned int(__thiscall* IconScrollerMenu_Create)(void* TheThis, void* ScreenConstructorData) = (unsigned int(__thiscall*)(void*, void*))0x59BC40;
