@@ -8,10 +8,10 @@ void Thing()
 	//Sleep(ThreadDelay);
 	_asm pushad;
 
-	raceOptions = *(DWORD*)0x91CF90; // Race Options Pointer (Thanks to samfednik)
-	GameState = *(DWORD*)0x0925E90; // 3 = FE, 4&5 = Loading screen, 6 = Gameplay
-	windowHandle = *(HWND*)0x982BF4;
-	IsOnFocus = !(*(bool*)0x982C50);
+	raceOptions = *(DWORD*)_FEDatabase; // Race Options Pointer (Thanks to samfednik)
+	GameState = *(DWORD*)_TheGameFlowManager; // 3 = FE, 4&5 = Loading screen, 6 = Gameplay
+	windowHandle = *(HWND*)_hWnd;
+	IsOnFocus = !(*(bool*)_IsLostFocus);
 
 	// Windowed Mode Related Fixes (Center and Resize)
 	if (WindowedMode && windowHandle && !once2)
@@ -138,7 +138,7 @@ void Thing()
 	{
 		copLightsEnabled = !copLightsEnabled;
 
-		DWORD* PlayerPVehicle = *(DWORD**)0x0092CD28;
+		DWORD* PlayerPVehicle = *(DWORD**)_PlayerPVehicle;
 
 		if (PlayerPVehicle)
 		{
@@ -158,7 +158,7 @@ void Thing()
 	{
 		headlightsMode = !headlightsMode;
 
-		DWORD* PlayerPVehicle = *(DWORD**)0x0092CD28;
+		DWORD* PlayerPVehicle = *(DWORD**)_PlayerPVehicle;
 
 		if (PlayerPVehicle)
 		{
@@ -273,7 +273,7 @@ void Thing()
 	// Freeze Camera
 	if ((GetAsyncKeyState(hotkeyFreezeCamera) & 1) && (GameState == 6) && IsOnFocus)
 	{
-		*(bool*)0x911020 = !(*(bool*)0x911020);
+		*(bool*)_Camera_StopUpdating = !(*(bool*)_Camera_StopUpdating);
 	}
 
 	// Unlock All Things
@@ -285,7 +285,7 @@ void Thing()
 
 		if (UnlockAllThings)
 		{
-			*(unsigned char*)0x926124 = 1;
+			*(unsigned char*)_UnlockAllThings = 1;
 
 			if (ShowMessage)
 			{
@@ -295,7 +295,7 @@ void Thing()
 		}
 		else
 		{
-			*(unsigned char*)0x926124 = 0;
+			*(unsigned char*)_UnlockAllThings = 0;
 
 			if (ShowMessage)
 			{
@@ -310,7 +310,7 @@ void Thing()
 		// Save
 		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(49) & 0x8000)
 		{
-			*(unsigned int*)0x9B0908 = 1;
+			*(unsigned int*)_SaveHotPosition = 1;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 1);
@@ -319,7 +319,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(50) & 0x8000)
 		{
-			*(unsigned int*)0x9B0908 = 2;
+			*(unsigned int*)_SaveHotPosition = 2;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 2);
@@ -328,7 +328,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(51) & 0x8000)
 		{
-			*(unsigned int*)0x9B0908 = 3;
+			*(unsigned int*)_SaveHotPosition = 3;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 3);
@@ -337,7 +337,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(52) & 0x8000)
 		{
-			*(unsigned int*)0x9B0908 = 4;
+			*(unsigned int*)_SaveHotPosition = 4;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 4);
@@ -346,7 +346,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LSHIFT) & GetAsyncKeyState(53) & 0x8000)
 		{
-			*(unsigned int*)0x9B0908 = 5;
+			*(unsigned int*)_SaveHotPosition = 5;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Your current position data is saved to Slot %d.", 5);
@@ -356,7 +356,7 @@ void Thing()
 		// Load
 		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(49) & 0x8000)
 		{
-			*(unsigned int*)0x009B090C = 1;
+			*(unsigned int*)_JumpToHotPosition = 1;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 1);
@@ -365,7 +365,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(50) & 0x8000)
 		{
-			*(unsigned int*)0x009B090C = 2;
+			*(unsigned int*)_JumpToHotPosition = 2;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 2);
@@ -374,7 +374,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(51) & 0x8000)
 		{
-			*(unsigned int*)0x009B090C = 3;
+			*(unsigned int*)_JumpToHotPosition = 3;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 3);
@@ -383,7 +383,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(52) & 0x8000)
 		{
-			*(unsigned int*)0x009B090C = 4;
+			*(unsigned int*)_JumpToHotPosition = 4;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 4);
@@ -392,7 +392,7 @@ void Thing()
 
 		if (GetAsyncKeyState(VK_LCONTROL) & GetAsyncKeyState(53) & 0x8000)
 		{
-			*(unsigned int*)0x009B090C = 5;
+			*(unsigned int*)_JumpToHotPosition = 5;
 			if (ShowMessage)
 			{
 				DialogInterface_ShowNButtons(1, NULL, DLGTITLE_INFO, 0, DialogBoxReturn, 0, 0, DialogBoxButtonOK, 0, 0, "Loaded position data from Slot %d.", 5);
@@ -407,17 +407,17 @@ void Thing()
 		{
 			DebugWorldCamera = !DebugWorldCamera;
 
-			if (*(int*)0x00925E90 == 6 && DebugWorldCamera)
+			if (*(int*)_TheGameFlowManager == 6 && DebugWorldCamera)
 			{
 				injector::WriteMemory<unsigned char>(0x750F4C, 0xEB, true); // fix crash??
-				*(unsigned int*)0x0091102C = 0;
+				*(unsigned int*)_WeHaveCheckedIfJR2ServerExists = 0;
 				CameraAI_SetAction(1, "CDActionDebug");
 			}
 
-			if (*(int*)0x00925E90 == 6 && !DebugWorldCamera)
+			if (*(int*)_TheGameFlowManager == 6 && !DebugWorldCamera)
 			{
 				CameraAI_SetAction(1, "CDActionDrive");
-				*(unsigned char*)0x911038 = 0;
+				*(unsigned char*)_WeHaveCheckedIfJR2ServerExists = 0;
 				injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
 			}
 		}
@@ -425,31 +425,31 @@ void Thing()
 		if ((GetAsyncKeyState(VK_NEXT) & 1)) // Page Down : Toggle Debug Watch Car Camera
 		{
 			DebugWatchCarCamera = !DebugWatchCarCamera;
-			*(unsigned char*)0x00911058 = 1;
+			*(unsigned char*)_mToggleCar = 1;
 
-			if (*(int*)0x00925E90 == 6 && DebugWatchCarCamera)
+			if (*(int*)_TheGameFlowManager == 6 && DebugWatchCarCamera)
 			{
 				injector::WriteMemory<unsigned char>(0x750F4C, 0xEB, true); // fix crash??
-				*(unsigned char*)0x911038 = 1;
+				*(unsigned char*)_CameraDebugWatchCar = 1;
 				CameraAI_SetAction(1, "CDActionDebugWatchCar");
 			}
 
-			if (*(int*)0x00925E90 == 6 && !DebugWatchCarCamera)
+			if (*(int*)_TheGameFlowManager == 6 && !DebugWatchCarCamera)
 			{
 				CameraAI_SetAction(1, "CDActionDrive");
-				*(unsigned char*)0x911038 = 0;
+				*(unsigned char*)_CameraDebugWatchCar = 0;
 				injector::WriteMemory<unsigned char>(0x750F4C, 0x75, true);
 			}
 		}
 
 		if ((GetAsyncKeyState(VK_ADD) & 1) && DebugWatchCarCamera) // + : Next car
 		{
-			*(unsigned char*)0x00911058 += 1;
+			*(unsigned char*)_mToggleCar += 1;
 		}
 
 		if ((GetAsyncKeyState(VK_SUBTRACT) & 1) && DebugWatchCarCamera) // - : Previous car
 		{
-			*(unsigned char*)0x00911058 -= 1;
+			*(unsigned char*)_mToggleCar -= 1;
 		}
 	}
 

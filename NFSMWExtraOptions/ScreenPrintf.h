@@ -449,16 +449,33 @@ int PursuitPrintf()
 	return ScreenPrintf(-300, -100, 1.0f, 0xFFFFFFFF, "Formation: %s", GetFormationStr(mCurPursuitForm));
 }
 
+void DoScreenPrintfs()
+{
+	DisplayDebugScreenPrints();
+	if (*(DWORD*)_TheGameFlowManager == 6)
+	{
+		PursuitPrintf();
+	}
+	
+}
+
 // 0x4404B9
 void __declspec(naked) AIPursuit_InitFormation_GetValues()
 {
 	_asm
 	{
+		push ebx
+		mov ebx,2
+		mov mCurPursuitState, ebx
+		pop ebx
+
+		push edx
+		mov edx, dword ptr ds:[esi+0xE0]
+		mov mCurPursuitLevel, edx
+		pop edx
+
 		mov ecx, [esp + 8]
 		pop esi
-
-		// todo
-
 		push 0x4404BE
 		retn
 	}
@@ -469,21 +486,20 @@ void __fastcall AIPursuit_EndCurrentFormation(DWORD* AIPursuit, void* EDX_unused
 {
 	AIPursuit[49] = 0;
 	AIPursuit[44] = -1.0f;
-	mCurPursuitLevel = AIPursuit[81]; // ?
+	mCurPursuitLevel = AIPursuit[56]; // ?
 	mCurPursuitState = 0;
 	mCurPursuitForm = 0;
 }
 
-// 0x4440B8
+// 0x4440B3
 void __declspec(naked) AIPursuit_OnTask_SetValues()
 {
 	_asm
 	{
-		push 0x40400000 // 3.0f
+		mov mCurPursuitForm, eax
+		call AIPursuit_InitFormation
 
-		// todo
-
-		push 0x4440BD
+		push 0x4440B8
 		retn
 	}
 }
@@ -531,7 +547,10 @@ void __declspec(naked) AIVehicleCopCar_CheckForPursuit_SetValues()
 		mov eax, [esp+0x14]
 		mov edx, [ebp+0]
 
-		// todo
+		push ebx
+		mov ebx, 2
+		mov mCurPursuitState, ebx
+		pop ebx
 
 		push 0x42A073
 		retn

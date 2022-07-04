@@ -10,7 +10,7 @@
 #include "InGameFunctions.h"
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
-int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney;
+int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney, ForceMaximumFSAALevel;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit;
 bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere, SkipTrackAnywhere;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
@@ -172,6 +172,7 @@ void Init()
 	ThreadDelay = iniReader.ReadInteger("Misc", "ThreadDelay", 5);
 	ExpandMemoryPools = iniReader.ReadInteger("Misc", "ExpandMemoryPools", 0) != 0;
 	DoScreenPrintf = iniReader.ReadInteger("Misc", "DoScreenPrintf", 1) != 0;
+	ForceMaximumFSAALevel = iniReader.ReadInteger("Misc", "ForceMaximumFSAALevel", -1);
 
 	// Limit values to fix increment & decrement behaviour breaking
 
@@ -518,7 +519,7 @@ void Init()
 	}
 
 	// Fix (ignore) starting heat level when a challenge executed from quick race screen
-	injector::WriteMemory<unsigned char>(0x56DD55, 0xEB, true);
+	// injector::WriteMemory<unsigned char>(0x56DD55, 0xEB, true);
 
 	// Unlock all things
 	if (UnlockAllThings)
@@ -909,9 +910,9 @@ void Init()
 	// Screen Printf
 	if (DoScreenPrintf)
 	{
-		injector::WriteMemory(0x926140, 1, true); // Vanilla variable
-		injector::MakeJMP(0x666110, InitScreenPrintfCodeCave, true);
-		injector::MakeJMP(0x64A80F, DisplayDebugScreenPrints, true);
+		injector::WriteMemory(_DoScreenPrintf, 1, true); // Vanilla variable
+		injector::MakeJMP(0x666110, InitScreenPrintfCodeCave, true);  // InitializeEverything
+		injector::MakeJMP(0x64A80F, DoScreenPrintfs, true); // Main_DisplayFrame
 		injector::WriteMemory(0x89B45C, ResetScreenPrintf, true); // cFEngGameInterface::EndPackageRendering
 
 		// Code caves for functions which had screen printfs in Alpha 124
@@ -919,6 +920,14 @@ void Init()
 		injector::MakeJMP(0x564471, FEManager_Update_ScreenPrintf, true);
 		injector::MakeJMP(0x7A8D3B, FindScreenInfo_ScreenPrintf, true); // my cars crash
 		injector::MakeJMP(0x7A8EBD, FindScreenInfo_ScreenPrintf2, true);
+
+		// Pursuit Printf
+		injector::MakeJMP(0x4404B9, AIPursuit_InitFormation_GetValues, true); // AIPursuit::InitFormation
+		injector::WriteMemory(0x8927DC, &AIPursuit_EndCurrentFormation, true); // AIPursuit::vtable
+		injector::MakeJMP(0x4440B3, AIPursuit_OnTask_SetValues, true); // AIPursuit::OnTask
+		injector::MakeJMP(0x4337AD, AIPursuit_Destructor_SetValues, true); // AIPursuit::~AIPursuit
+		injector::MakeJMP(0x429DBC, AIPerpVehicle_OnCausedCollision_SetValues, true); // AIPerpVehicle::OnCausedCollision
+		injector::MakeJMP(0x42A06C, AIVehicleCopCar_CheckForPursuit_SetValues, true); // AIVehicleCopCar::CheckForPursuit
 	}
 
 	// World Map Anywhere
@@ -931,6 +940,23 @@ void Init()
 	if (SkipTrackAnywhere)
 	{
 		injector::MakeNOP(0x5170CF, 2, true);
+	}
+
+	// Maximum FSAA Level
+	if (ForceMaximumFSAALevel != -1)
+	{
+		ForceMaximumFSAALevel %= 5;
+
+		injector::WriteMemory<int>(0x901890, ForceMaximumFSAALevel, true);
+
+		// Disable the GPU checks for the Maximum FSAA Level
+		injector::MakeRangedNOP(0x6C16E1, 0x6C16E7, true); // sub_6C1510
+		injector::MakeRangedNOP(0x6C16F2, 0x6C16F8, true);
+		injector::MakeRangedNOP(0x6D22F7, 0x6D22FD, true); // sub_6D2100
+		injector::MakeRangedNOP(0x6D2333, 0x6D233D, true);
+		injector::MakeRangedNOP(0x6D23E7, 0x6D23ED, true);
+		injector::MakeRangedNOP(0x6D242A, 0x6D2434, true);
+		injector::MakeRangedNOP(0x6E6D1E, 0x6E6D24, true); // eInitEngine
 	}
 
 	// Other Things
