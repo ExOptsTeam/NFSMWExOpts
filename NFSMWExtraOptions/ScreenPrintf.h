@@ -420,6 +420,9 @@ char* GetFormationStr(int Form)
 	case 6:
 		return "HERD";
 		break;
+	case 7:
+		return "STAGGER_FOLLOW";
+		break;
 	default:
 		return "NONE";
 		break;
@@ -432,7 +435,7 @@ int PursuitPrintf()
 	switch (mCurPursuitState)
 	{
 	case 1:
-		ScreenPrintf(-300, -130, 1.0f, 0xFFFFFFFF, "SEEN");
+		ScreenPrintf(-300, -130, 2.0f, 0xFFFFFFFF, "SEEN");
 		ScreenPrintf(-300, -115, 1.0f, 0xFFFFFFFF, "Pursuit: IDLE - %d", mCurPursuitLevel);
 		break;
 	case 2:
@@ -449,14 +452,36 @@ int PursuitPrintf()
 	return ScreenPrintf(-300, -100, 1.0f, 0xFFFFFFFF, "Formation: %s", GetFormationStr(mCurPursuitForm));
 }
 
+int SessionIDPrintf()
+{
+	/*
+	DWORD* Instance = LobbyGameSessions_Instance();
+	DWORD* MySession = LobbyGameSessions_GetMySession(Instance);
+
+	if (MySession)
+	{
+		return ScreenPrintf(-300, -120, 1.0f, 0xFFFFFFFF, "Session ID: %s", (char const*)MySession + 40);
+	}
+	return ScreenPrintf(-300, -120, 1.0f, 0xFFFFFFFF, "Session ID: none");
+	*/
+	return 0;
+}
+
+int OnlineScreenPrintf()
+{
+	return 0;
+}
+
 void DoScreenPrintfs()
 {
 	DisplayDebugScreenPrints();
+
 	if (*(DWORD*)_TheGameFlowManager == 6)
 	{
 		PursuitPrintf();
+		//SessionIDPrintf();
+		//OnlineScreenPrintf();
 	}
-	
 }
 
 // 0x4404B9

@@ -102,3 +102,5 @@ float* (__thiscall* PVehicle_GetPosition)(DWORD*) = (float* (__thiscall*)(DWORD*
 DWORD* (__thiscall* AITarget_Acquire)(DWORD* AITarget, DWORD* ISimable) = (DWORD * (__thiscall*)(DWORD*, DWORD*))0x423860;
 void(__thiscall* Sim_Activity_DetachAll)(DWORD* Sim_Activity) = (void(__thiscall*)(DWORD*))0x6E9C40;
 DWORD* (__thiscall* AIPursuit_InitFormation)(DWORD* AIPursuit, int Form) = (DWORD * (__thiscall*)(DWORD*, int))0x440330;
+DWORD* (* LobbyGameSessions_Instance)() = (DWORD * (*)())0x79BAC0;
+DWORD* (__thiscall* LobbyGameSessions_GetMySession)(DWORD* LobbyGameSessions) = (DWORD * (__thiscall*)(DWORD*))0x78BCC0;
