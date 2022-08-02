@@ -24,3 +24,5 @@
 #define _JumpToHotPosition 0x9B090C
 
 #define LanguageSelectScreen_vtable 0x8A1D2C
+
+float PoppedTireTractionBoost = 0.5f;

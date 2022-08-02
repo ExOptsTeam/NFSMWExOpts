@@ -147,7 +147,7 @@ void DisplayDebugScreenPrints()
 	// Memory
 	int FreeMemoryPool0 = bCountFreeMemory(0);
 	if (FreeMemoryPool0 <= -1) FreeMemoryPool0 += 1023;
-	int FreeMemoryAudioPool;
+	int FreeMemoryAudioPool = 0;
 	if (EnableSound) FreeMemoryAudioPool = bCountFreeMemory(*(int*)AudioMemoryPool); // AudioMemoryPool
 
 	ScreenPrintf(-300, 45, 1.0f, 0xFFFFFFFF, "Main = %dK  Fast = %dK", FreeMemoryPool0 >> 10, FreeMemoryAudioPool >> 10);
@@ -157,7 +157,7 @@ void DisplayDebugScreenPrints()
 		// Event ID and Coordinates
 		DWORD* GRaceStatus = (DWORD*)*(DWORD*)GRaceStatus_fObj;
 		char* EventID = "";
-		float* Coords;
+		float* Coords = NULL;
 
 		if (GRaceStatus)
 		{
@@ -173,7 +173,10 @@ void DisplayDebugScreenPrints()
 				Coords = PVehicle_GetPosition(PlayerPVehicle);
 			}
 
-			ScreenPrintf(-300, 15, 1.0f, 0xFFFFFFFF, "(%.0f,%.0f,%.0f) %s", Coords[0], Coords[1], Coords[2], EventID ? EventID : "");
+			if (Coords)
+			{
+				ScreenPrintf(-300, 15, 1.0f, 0xFFFFFFFF, "(%.0f,%.0f,%.0f) %s", Coords[0], Coords[1], Coords[2], EventID ? EventID : "");
+			}
 		}
 
 
@@ -404,28 +407,18 @@ char* GetFormationStr(int Form)
 	{
 	case 1:
 		return "PlayerNum";
-		break;
 	case 2:
 		return "BOX_IN";
-		break;
 	case 3:
 		return "ROLLING_BLOCK";
-		break;
 	case 4:
 		return "FOLLOW";
-		break;
 	case 5:
 		return "HELI_PURSUIT";
-		break;
 	case 6:
 		return "HERD";
-		break;
 	case 7:
 		return "STAGGER_FOLLOW";
-		break;
-	default:
-		return "NONE";
-		break;
 	}
 	return "NONE";
 }

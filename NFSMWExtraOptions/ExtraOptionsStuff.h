@@ -11,8 +11,8 @@
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney, ForceMaximumFSAALevel;
-unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit;
-bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere, SkipTrackAnywhere, CarbonStyleTirePop;
+unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit, CarbonStyleTirePop;
+bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere, SkipTrackAnywhere;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
 HWND windowHandle;
 
@@ -98,7 +98,7 @@ void Init()
 	removeSceneryGroupDoor = iniReader.ReadInteger("Gameplay", "RemoveOldBridgeBarrier", 0) != 0;
 	removePlayerBarriers = iniReader.ReadInteger("Gameplay", "RemoveNeonBarriers", 0) != 0;
 	CarbonStyleRaceProgress = iniReader.ReadInteger("Gameplay", "ShowPercentOn1LapRaces", 1) != 0;
-	CarbonStyleTirePop = iniReader.ReadInteger("Gameplay", "BetterHandlingWithFlatTires", 1) != 0;
+	CarbonStyleTirePop = iniReader.ReadInteger("Gameplay", "BetterHandlingWithFlatTires", 0);
 	StartingCashDWORD = iniReader.ReadInteger("Gameplay", "StartingCash", 0);
 	UG2SaveMoney = iniReader.ReadInteger("Gameplay", "AwardedCash", 10000);
 	WorldMapAnywhere = iniReader.ReadInteger("Gameplay", "WorldMapAnywhere", 1) != 0;
@@ -201,6 +201,11 @@ void Init()
 	PurchasedCarLimit %= 26;
 	PurchasedCarLimit--;
 
+	MaxUniqueOpponentCars %= 8;
+	if (!MaxUniqueOpponentCars) MaxUniqueOpponentCars = 3;
+
+	CarbonStyleTirePop %= 3;
+
 	// Allow Multiple Instances
 	if (AllowMultipleInstances)
 	{
@@ -217,9 +222,6 @@ void Init()
 
 		injector::WriteMemory<DWORD>(0x8F5790, 0x0BE6E0, true); // FEngMemoryPoolSize (InitFEngMemoryPool)
 		injector::WriteMemory<DWORD>(0x8F7EF0, 0x01CC00, true); // CarLoaderPoolSizes
-
-		// To prevent some crashes
-		if (MaxUniqueOpponentCars > 7) MaxUniqueOpponentCars = 7;
 	}
 
 	// Remove 1-8 Lap Restriction
@@ -782,10 +784,19 @@ void Init()
 	}
 
 	// Carbon-Style Tire Pop (Better handling with flat tires)
-	if (CarbonStyleTirePop)
+	switch (CarbonStyleTirePop)
 	{
-		injector::WriteMemory<float>(0x6A9ED2, 0.02f, true); // SuspensionRacer::TuneWheelParams
-		injector::WriteMemory<float>(0x6A9EDE, 0.15f, true);
+		case 1: // Values from Carbon
+			injector::WriteMemory<float>(0x6A9ED2, 0.02f, true); // SuspensionRacer::TuneWheelParams
+			injector::WriteMemory<float>(0x6A9EDE, 0.15f, true);
+			injector::WriteMemory(0x6A9EEC, &PoppedTireTractionBoost, true);
+			break;
+		case 2: // 1:1 Mix of both games
+			injector::WriteMemory<float>(0x6A9ED2, 0.01f, true); // SuspensionRacer::TuneWheelParams
+			injector::WriteMemory<float>(0x6A9EDE, 0.575f, true);
+			PoppedTireTractionBoost = 0.4f;
+			injector::WriteMemory(0x6A9EEC, &PoppedTireTractionBoost, true);
+			break;
 	}
 
 	// Time Of Day (Replaces Level of Detail)
