@@ -13,7 +13,7 @@ float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainInt
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney, ForceMaximumFSAALevel;
 unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit, CarbonStyleTirePop;
 bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere, SkipTrackAnywhere;
-DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState, ThreadDelay;
+DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState;
 HWND windowHandle;
 
 bool forceHeatLevel = 0, carHackEnabled = 0, once1 = 0, once2 = 0, once3 = 0, IsOnFocus, AutoDrive, ToggleCops = 1;
@@ -67,7 +67,7 @@ void Init()
 	ShowOnlineOpts = iniReader.ReadInteger("Menu", "ShowOnlineOpts", 0) != 0;
 	ShowSubs = iniReader.ReadInteger("Menu", "ShowSubs", 0) != 0;
 	EnablePresetAndDebugCars = iniReader.ReadInteger("Menu", "ShowMoreCarCategories", 0) != 0;
-	ShowLanguageSelectScreen = iniReader.ReadInteger("Menu", "ShowLanguageSelectScreen", 1) != 0;
+	ShowLanguageSelectScreen = iniReader.ReadInteger("Menu", "ShowLanguageSelectScreen", 0) != 0;
 	moreVinyls = iniReader.ReadInteger("Menu", "ShowSpecialVinyls", 1) != 0;
 	ShowDebugCarCustomize = iniReader.ReadInteger("Menu", "ShowDebugCarCustomize", 0) != 0;
 	ShowDebugEventID = iniReader.ReadInteger("Menu", "ShowDebugEventID", 0) != 0;
@@ -107,7 +107,7 @@ void Init()
 	ForceBlackEdition = iniReader.ReadInteger("Gameplay", "ForceBlackEdition", 1) != 0;
 	eatSomeBurgers = iniReader.ReadInteger("Gameplay", "UnlockBurgerKingChallenge", 0) != 0;
 	EnableMaxPerfOnShop = iniReader.ReadInteger("Gameplay", "EnableMaxPerformanceOnShop", 1) != 0;
-	ShowAllCarsInFE = iniReader.ReadInteger("Gameplay", "ShowAllCarsInFE", 1);
+	ShowAllCarsInFE = iniReader.ReadInteger("Gameplay", "ShowAllCarsInFE", 0);
 	// ShowPresetCarsInFE = iniReader.ReadInteger("Gameplay", "ShowPresetCarsInFE", 0);
 	NoCatchUp = iniReader.ReadInteger("Gameplay", "NoCatchUp", 0) != 0;
 	NoRevLimiter = iniReader.ReadInteger("Gameplay", "NoRevLimiter", 0) != 0;
@@ -120,16 +120,16 @@ void Init()
 
 	// Pursuit
 	EnableHeatLevelOverride = iniReader.ReadInteger("Pursuit", "HeatLevelOverride", 0) != 0;
-	MinHeatLevel = iniReader.ReadFloat("Pursuit", "MinimumHeatLevel", 1.00f);
-	MaxHeatLevel = iniReader.ReadFloat("Pursuit", "MaximumHeatLevel", 10.00f);
+	MinHeatLevel = iniReader.ReadFloat("Pursuit", "MinimumHeatLevel", 1.0f);
+	MaxHeatLevel = iniReader.ReadFloat("Pursuit", "MaximumHeatLevel", 10.0f);
 	PursuitActionMode = iniReader.ReadInteger("Pursuit", "PursuitActionMode", 0) != 0;
 	ShowPursuitCops = iniReader.ReadInteger("Pursuit", "ShowPursuitCops", 1) != 0;
 	ShowNonPursuitCops = iniReader.ReadInteger("Pursuit", "ShowNonPursuitCops", 0) != 0;
 	CarbonStyleBustedScreen = iniReader.ReadInteger("Pursuit", "ShowBustedScreenFrame", 1) == 0;
 	UncensoredBustedScreen = iniReader.ReadInteger("Pursuit", "UncensoredBustedScreen", 0) != 0;
-	SpeedingLimit = iniReader.ReadFloat("Pursuit", "SpeedingLimit", 67.00f);
-	ExcessiveSpeedingLimit = iniReader.ReadFloat("Pursuit", "ExcessiveSpeedingLimit", 80.50f);
-	RecklessDrivingLimit = iniReader.ReadFloat("Pursuit", "RecklessDrivingLimit", 89.40f);
+	SpeedingLimit = iniReader.ReadFloat("Pursuit", "SpeedingLimit", 67.0f);
+	ExcessiveSpeedingLimit = iniReader.ReadFloat("Pursuit", "ExcessiveSpeedingLimit", 80.5f);
+	RecklessDrivingLimit = iniReader.ReadFloat("Pursuit", "RecklessDrivingLimit", 89.4f);
 
 	// VisualTreatment
 	EnableVTOverride = iniReader.ReadInteger("VisualTreatment", "EnableVisualTreatmentOverride", 0) != 0;
@@ -170,9 +170,8 @@ void Init()
 	ShowMessage = iniReader.ReadInteger("Misc", "ShowMessage", 1) != 0;
 	SkipCareerIntro = iniReader.ReadInteger("Misc", "SkipCareerIntro", 0) != 0;
 	AllowMultipleInstances = iniReader.ReadInteger("Misc", "AllowMultipleInstances", 0) != 0;
-	ThreadDelay = iniReader.ReadInteger("Misc", "ThreadDelay", 5);
 	ExpandMemoryPools = iniReader.ReadInteger("Misc", "ExpandMemoryPools", 0) != 0;
-	DoScreenPrintf = iniReader.ReadInteger("Misc", "DoScreenPrintf", 1) != 0;
+	DoScreenPrintf = iniReader.ReadInteger("Misc", "DoScreenPrintf", 0) != 0;
 	ForceMaximumFSAALevel = iniReader.ReadInteger("Misc", "ForceMaximumFSAALevel", -1);
 
 	// Limit values to fix increment & decrement behaviour breaking

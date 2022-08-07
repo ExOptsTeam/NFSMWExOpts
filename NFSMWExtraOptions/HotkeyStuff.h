@@ -5,7 +5,6 @@
 
 void Thing()
 {
-	//Sleep(ThreadDelay);
 	_asm pushad;
 
 	raceOptions = *(DWORD*)_FEDatabase; // Race Options Pointer (Thanks to samfednik)
