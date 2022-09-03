@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "InGameFunctions.h"
+#include "Helpers.h"
 
 #define SCREEN_PRINT_ITEM_COUNT 64
 #define SCREEN_PRINT_BUFFER_SIZE 128
@@ -12,11 +13,11 @@
 #define FrameTimingEndTime 0x925834
 #define RealTimeElapsed 0x925960
 #define BuildVersionChangelistNumber 0x8F8694
-#define _SomeDebugFloat 0x9AAB5C
+#define _DistanceToNextSection 0x9AAB5C
 #define _TrackStreamNameThing 0x9AAB64
 
 char ScreenPrintfBuffer[SCREEN_PRINT_BUFFER_SIZE];
-int mCurPursuitState, mCurPursuitLevel, mCurPursuitForm;
+int mCurPursuitState = 0, mCurPursuitLevel = 0, mCurPursuitForm = 0;
 
 typedef struct 
 {
@@ -154,6 +155,8 @@ void DisplayDebugScreenPrints()
 
 	if (GameState == 6)
 	{
+		PlayerPVehicle = GetPlayerPVehicle();
+
 		// Event ID and Coordinates
 		DWORD* GRaceStatus = (DWORD*)*(DWORD*)GRaceStatus_fObj;
 		char* EventID = "";
@@ -167,7 +170,6 @@ void DisplayDebugScreenPrints()
 				EventID = GRaceParameters_GetEventID(GRaceParams);
 			}
 
-			PlayerPVehicle = *(DWORD**)_PlayerPVehicle;
 			if (PlayerPVehicle)
 			{
 				Coords = PVehicle_GetPosition(PlayerPVehicle);
@@ -187,24 +189,26 @@ void DisplayDebugScreenPrints()
 		TSSize = TSUsed + 1023;
 		if (TSUsed > -1) TSSize = TSUsed;
 
-		char SomeDebugString[8] = "";
-		float SomeDebugFloat = *(float*)_SomeDebugFloat;
-		if (SomeDebugFloat > 0.0)
-			bSPrintf(SomeDebugString, "%3.1f", SomeDebugFloat);
+		char DistanceToNextSectionFmtStr[8] = "";
+		float DistanceToNextSection = *(float*)_DistanceToNextSection;
+		if (DistanceToNextSection > 0.0)
+			bSPrintf(DistanceToNextSectionFmtStr, "%3.1f", DistanceToNextSection);
 
-		ScreenPrintf(-300, 30, 1.0f, 0xFFFFFFFF, "TS = %d / %dK %s %s %s", TSUsed >> 10, TSSize >> 10, (char*)(_TrackStreamNameThing), SomeDebugString, "");
+		ScreenPrintf(-300, 30, 1.0f, 0xFFFFFFFF, "TS = %d / %dK %s %s %s", TSUsed >> 10, TSSize >> 10, (char*)(_TrackStreamNameThing), DistanceToNextSectionFmtStr, "");
 
 		// Vehicle
-		PlayerPVehicle = *(DWORD**)_PlayerPVehicle;
+		DebugVehicleSelectionThis = *(DWORD**)DebugVehicleSelection_mThis;
 
 		if (PlayerPVehicle)
 		{
 			char* VehicleName = PVehicle_GetVehicleName(PlayerPVehicle);
 			ScreenShadowPrintf(-300, 220, 1.0f, 0xFFFFFFFF, "Vehicle: %s", VehicleName ? VehicleName : "null");
+			PlayerISuspension = (DWORD*)PlayerPVehicle[17]; // ISuspension
 		}
-
-		PlayerISuspension = (DWORD*)PlayerPVehicle[17]; // ISuspension
-		DebugVehicleSelectionThis = *(DWORD**)DebugVehicleSelection_mThis;
+		else
+		{
+			PlayerISuspension = NULL;
+		}
 
 		// Surface & Collision
 		if (PlayerISuspension && DebugVehicleSelectionThis)
@@ -406,7 +410,7 @@ char* GetFormationStr(int Form)
 	switch (Form)
 	{
 	case 1:
-		return "PlayerNum";
+		return "PIT";
 	case 2:
 		return "BOX_IN";
 	case 3:
@@ -471,7 +475,8 @@ void DoScreenPrintfs()
 
 	if (*(DWORD*)_TheGameFlowManager == 6)
 	{
-		PursuitPrintf();
+		if (mCurPursuitForm || mCurPursuitState) PursuitPrintf();
+
 		//SessionIDPrintf();
 		//OnlineScreenPrintf();
 	}

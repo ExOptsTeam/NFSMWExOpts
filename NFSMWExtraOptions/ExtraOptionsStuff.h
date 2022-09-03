@@ -10,8 +10,8 @@
 #include "InGameFunctions.h"
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
-int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney, ForceMaximumFSAALevel;
-unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit, CarbonStyleTirePop;
+int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney, ForceMaximumFSAALevel, ForceCarLOD, ForceTireLOD;
+unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit, CarbonStyleTirePop, ImpoundStrikesCount, MaxImpoundStrikesCount;
 bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere, SkipTrackAnywhere;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState;
 HWND windowHandle;
@@ -114,6 +114,8 @@ void Init()
 	NosTrailRepeatCount = iniReader.ReadInteger("Gameplay", "NosTrailRepeatCount", 8);
 	SelectableMarkerCount = iniReader.ReadInteger("Gameplay", "SelectableMarkerCount", 2);
 	PurchasedCarLimit = iniReader.ReadInteger("Gameplay", "PurchasedCarLimit", 10);
+	ImpoundStrikesCount = iniReader.ReadInteger("Gameplay", "ImpoundStrikesCount", 3);
+	MaxImpoundStrikesCount = iniReader.ReadInteger("Gameplay", "MaximumImpoundStrikesCount", 5);
 	SBRechargeTime = iniReader.ReadFloat("Gameplay", "SBRechargeTime", 25.0f);
 	SBRechargeSpeedLimit = iniReader.ReadFloat("Gameplay", "SBRechargeSpeedLimit", 100.0f);
 	SBMassMultiplier = iniReader.ReadFloat("Gameplay", "SBMassMultiplier", 2.0f);
@@ -173,6 +175,8 @@ void Init()
 	ExpandMemoryPools = iniReader.ReadInteger("Misc", "ExpandMemoryPools", 0) != 0;
 	DoScreenPrintf = iniReader.ReadInteger("Misc", "DoScreenPrintf", 0) != 0;
 	ForceMaximumFSAALevel = iniReader.ReadInteger("Misc", "ForceMaximumFSAALevel", -1);
+	ForceCarLOD = iniReader.ReadInteger("Misc", "ForceCarLOD", -1);
+	ForceTireLOD = iniReader.ReadInteger("Misc", "ForceTireLOD", -1);
 
 	// Limit values to fix increment & decrement behaviour breaking
 
@@ -199,6 +203,12 @@ void Init()
 
 	PurchasedCarLimit %= 26;
 	PurchasedCarLimit--;
+
+	ImpoundStrikesCount %= 128;
+	if (!ImpoundStrikesCount) ImpoundStrikesCount = 3;
+
+	MaxImpoundStrikesCount %= 128;
+	if (!MaxImpoundStrikesCount) MaxImpoundStrikesCount = 5;
 
 	MaxUniqueOpponentCars %= 8;
 	if (!MaxUniqueOpponentCars) MaxUniqueOpponentCars = 3;
@@ -449,6 +459,10 @@ void Init()
 		injector::WriteMemory<unsigned char>(0x926125, 1, true); // SkipDDayRaces
 		injector::WriteMemory<unsigned char>(0x926126, 1, true); // SkipCareerIntro
 	}
+
+	// Force Car and Tire LOD
+	injector::WriteMemory<int>(_ForceCarLOD, ForceCarLOD, true);
+	injector::WriteMemory<int>(_ForceTireLOD, ForceTireLOD, true);
 
 	// Enable hidden camera modes
 	if (EnableCameras)
@@ -864,6 +878,14 @@ void Init()
 
 	// Garage Car Slot Limit
 	injector::WriteMemory<unsigned char>(0x7C1A77, PurchasedCarLimit, true);
+
+	// Number of Impound Strikes for New Cars
+	injector::WriteMemory<BYTE>(0x580DA7, ImpoundStrikesCount, true); // FEPlayerCarDB::CreateNewCareerRecord
+	injector::WriteMemory<BYTE>(0x56F758, ImpoundStrikesCount, true); // FECareerRecord::Default (Unused)
+	injector::WriteMemory<BYTE>(0x56F614, ImpoundStrikesCount, true); // FEImpoundData::Default (Unused)
+
+	// Number of Maximum Impound Strikes
+	injector::WriteMemory<BYTE>(0x8F4314, MaxImpoundStrikesCount, true); // g_MaximumMaximumTimesBusted
 
 	// Debug Cam Speed
 	injector::WriteMemory<float>(0x8EDEA4, DebugCameraTurboSpeed, true);

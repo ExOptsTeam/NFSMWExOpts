@@ -137,7 +137,7 @@ void Thing()
 	{
 		copLightsEnabled = !copLightsEnabled;
 
-		DWORD* PlayerPVehicle = *(DWORD**)_PlayerPVehicle;
+		DWORD* PlayerPVehicle = GetPlayerPVehicle();;
 
 		if (PlayerPVehicle)
 		{
@@ -157,7 +157,7 @@ void Thing()
 	{
 		headlightsMode = !headlightsMode;
 
-		DWORD* PlayerPVehicle = *(DWORD**)_PlayerPVehicle;
+		DWORD* PlayerPVehicle = GetPlayerPVehicle();;
 
 		if (PlayerPVehicle)
 		{

@@ -2,11 +2,14 @@
 #define _TheGameFlowManager 0x0925E90
 #define _FEDatabase 0x91CF90
 #define _IsLostFocus 0x982C50
+#define _ForceCarLOD 0x903384
+#define _ForceTireLOD 0x903388
 #define _hWnd 0x982BF4
 #define MSOption_vtable 0x8B75B0
 #define cFEng_mInstance 0x91CADC
 #define cFEngRender_mInstance 0x91CFA8
 #define DebugVehicleSelection_mThis 0x9B08F8
+#define _PlayerIPlayer 0x92D888
 #define _PlayerPVehicle 0x92CD28
 #define _FEDatabase 0x91CF90
 #define nullString 0x890978
