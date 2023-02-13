@@ -11,12 +11,11 @@
 
 float heatLevel, gameSpeed, FallingRainSize, RainAmount, RoadReflection, RainIntensity, RainXing, RainFallSpeed, RainGravity, SplashScreenTimeLimit, CarSelectTireSteerAngle, MaxHeatLevel, MinHeatLevel, WorldAnimationSpeed, CarScale, VTRed, VTBlue, VTGreen, VTBlackBloom, VTColorBloom, VTSaturation, DebugCameraTurboSpeed, DebugCameraSuperTurboSpeed, SBRechargeTime, SBRechargeSpeedLimit, SBMassMultiplier, SpeedingLimit, ExcessiveSpeedingLimit, RecklessDrivingLimit;
 int hotkeyToggleForceHeat, hotkeyForceHeatLevel, hotkeyToggleCopLights, hotkeyToggleHeadlights, hotkeyCarHack, hotkeyUnlockAllThings, hotkeyAutoDrive, randomizeCount, hotkeyToggleCops, hotkeyFreezeCamera, NosTrailRepeatCount, UG2SaveMoney, ForceMaximumFSAALevel, ForceCarLOD, ForceTireLOD;
-unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, WindowedMode, SelectableMarkerCount, PurchasedCarLimit, CarbonStyleTirePop, ImpoundStrikesCount, MaxImpoundStrikesCount;
+unsigned char raceType, raceMode, minLaps, maxLaps, minOpponents, maxOpponents, maxLapsRandomQR, maxOpponentsRandomQR, maxBlacklist, csBlacklist, headlightsMode, lowTraffic, medTraffic, highTraffic, ShowHiddenTracks, MaxUniqueOpponentCars, ShowAllCarsInFE, SelectableMarkerCount, PurchasedCarLimit, CarbonStyleTirePop, ImpoundStrikesCount, MaxImpoundStrikesCount;
 bool copLightsEnabled, HideOnline, ShowOnlineOpts, removeSceneryGroupDoor, removePlayerBarriers, unfreezeKO, EnablePresetAndDebugCars, AlwaysRain, SkipMovies, EnableSound, EnableMusic, EnableCameras, ExOptsTeamTakeOver, ShowSubs, EnableHeatLevelOverride, CarbonStyleRaceProgress, moreVinyls, eatSomeBurgers, UnlockAllThings, GarageRotate, GarageZoom, GarageShowcase, EnableSaveLoadHotPos, EnableMaxPerfOnShop, EnableVTOverride, EnableDebugWorldCamera, DebugWorldCamera, DebugWatchCarCamera, ForceBlackEdition, HelicopterFix, X10Fix, WheelFix, ExperimentalSplitScreenFix, ShowDebugCarCustomize, CarbonStyleBustedScreen, ShowMessage, ReplayBlacklistRaces, PursuitActionMode, MoreCarsForOpponents, VisualFixesAndTweaks, UncensoredBustedScreen, ShowPursuitCops, ShowNonPursuitCops, ShowDebugEventID, CarbonStyleRandomCars, SkipCareerIntro, ShowTimeOfDay, BetterRandomRaces, AllowMultipleInstances, TimeBugFix, NoCatchUp, CarSkinFix, ImmobileColFix, NFSU2StyleLookBackCamera, NoRevLimiter, SkipNISs, ExpandMemoryPools, ShowPresetCarsInFE, AllowLongerProfileNames, DDayFix, BustedNISFix, ShowLanguageSelectScreen, DoScreenPrintf, WorldMapAnywhere, SkipTrackAnywhere;
 DWORD selectedCar, careerCar, raceOptions, Strings, HeatLevelAddr, VTecx, StartingCashDWORD, GameState;
-HWND windowHandle;
 
-bool forceHeatLevel = 0, carHackEnabled = 0, once1 = 0, once2 = 0, once3 = 0, IsOnFocus, AutoDrive, ToggleCops = 1;
+bool forceHeatLevel = 0, carHackEnabled = 0, AutoDrive, ToggleCops = 1;
 DWORD ButtonResult = 0;
 
 #include "DialogInterfaceHook.h"
@@ -164,7 +163,6 @@ void Init()
 	BustedNISFix = iniReader.ReadInteger("Fixes", "BustedNISFix", 1) != 0;
 
 	// Misc
-	WindowedMode = iniReader.ReadInteger("Misc", "WindowedMode", 0);
 	SkipMovies = iniReader.ReadInteger("Misc", "SkipMovies", 0) != 0;
 	SkipNISs = iniReader.ReadInteger("Misc", "SkipNISs", 0) != 0;
 	EnableSound = iniReader.ReadInteger("Misc", "EnableSound", 1) != 0;
@@ -425,12 +423,7 @@ void Init()
 	injector::WriteMemory<float>(0x904A28, RainFallSpeed, true);
 	injector::WriteMemory<float>(0x904A2C, RainGravity, true);
 
-	// Options from ModLoader
-	if (WindowedMode != 0)
-	{
-		injector::WriteMemory<unsigned char>(0x982BF0, 1, true);
-	}
-
+	// Misc Options
 	if (SkipMovies)
 	{
 		injector::WriteMemory<unsigned char>(0x926144, SkipMovies, true);

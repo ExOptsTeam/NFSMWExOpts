@@ -493,11 +493,11 @@ void __declspec(naked) AIPursuit_InitFormation_GetValues()
 		pop ebx
 
 		push edx
-		mov edx, dword ptr ds:[esi+0xE0]
+		mov edx, dword ptr ds : [esi + 0xE0]
 		mov mCurPursuitLevel, edx
 		pop edx
 
-		mov ecx, [esp + 8]
+		mov ecx, dword ptr ds : [esp + 8]
 		pop esi
 		push 0x4404BE
 		retn
@@ -567,8 +567,8 @@ void __declspec(naked) AIVehicleCopCar_CheckForPursuit_SetValues()
 {
 	_asm
 	{
-		mov eax, [esp+0x14]
-		mov edx, [ebp+0]
+		mov eax, dword ptr ds : [esp+0x14]
+		mov edx, dword ptr ds : [ebp+0]
 
 		push ebx
 		mov ebx, 2
