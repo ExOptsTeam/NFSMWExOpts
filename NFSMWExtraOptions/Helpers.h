@@ -4,7 +4,7 @@
 #define DialogBoxButtonOK 0x417B2601
 #define ESRBOBJHASH 0xBDE7FA72
 #define EVENTIDOBJHASH 0xBBF970CD
-#define TAKEOVERSTRING "NFSMW Extra Options - © 2022 ExOpts Team. No Rights Reserved."
+#define TAKEOVERSTRING "NFSMW Extra Options - © 2023 ExOpts Team. No Rights Reserved."
 
 DWORD DialogBoxReturnValueExit = 0x7C7250;
 
